@@ -201,6 +201,23 @@ button{font-family:inherit;color:inherit}
 .ht span{display:block;font-size:16px;font-weight:800;margin-top:2px}
 .ht small{font-size:11px;opacity:.7}
 .ht.dk{color:#fff}
+.seg{display:flex;background:var(--card);border-radius:12px;padding:4px;margin:0 0 14px}
+.seg button{flex:1;border:0;background:none;padding:9px 0;border-radius:9px;font-size:15px;font-weight:700;color:var(--mu);cursor:pointer;font-family:inherit}
+.seg button.on{background:var(--bg);color:var(--tx);box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.addw{width:100%;border:1.5px dashed var(--ln);background:none;border-radius:14px;padding:12px;font-size:15px;font-weight:700;color:var(--key-tx);cursor:pointer;font-family:inherit;margin-bottom:4px}
+.rt small.hi{display:block;font-size:11px;color:var(--mu);margin-top:1px}
+.cta.ghost{background:none;color:var(--up);margin-top:6px}
+.cd{margin:0 0 6px}.cdh{display:flex;justify-content:space-between;align-items:baseline;padding:14px 0 6px;border-bottom:1px solid var(--ln)}
+.cdh b{font-size:15px}.cdh span{font-size:12px;color:var(--mu);font-weight:600}
+.cd.today .cdh span{color:var(--key-tx)}
+.ce{display:flex;gap:12px;align-items:center;padding:10px 0}
+.ce .cic{width:36px;height:36px;border-radius:50%;flex:0 0 36px;display:grid;place-items:center;background:var(--card);overflow:hidden}
+.ce .cic img{width:100%;height:100%;object-fit:cover}.ce .cic i{font-style:normal;font-size:16px}
+.ce.k-earn .cic i{font-size:10px;font-weight:800;color:var(--key-tx)}
+.ce.k-earn .cic{background:var(--key-soft)}
+.ce b{display:block;font-size:15px}.ce b em{font-style:normal;font-size:11px;font-weight:700;color:var(--key-tx);background:var(--key-soft);border-radius:5px;padding:1px 5px;margin-left:4px;vertical-align:1px}
+.ce div span{font-size:13px;color:var(--tx2)}
+.ce.k-macro b{color:var(--tx)}
 </style>
 </head>
 <body>
@@ -262,20 +279,36 @@ button{font-family:inherit;color:inherit}
     <!-- STOCKS -->
     <section class="pg" id="p_stk">
       <div class="pad">
+        <div class="seg" id="seg"><button class="on" data-v="hold">보유</button><button data-v="watch">관심</button></div>
+        <div id="stkW" style="display:none">
+          <button class="addw" onclick="wOpen()">＋ 관심종목 추가</button>
+          <div id="wList"></div>
+          <p class="foot" style="padding:14px 0 0">최대 20개 · 고점 대비는 52주 최고가 기준 · 눌러서 메모 수정·삭제</p>
+        </div>
+        <div id="stkH">
         <div class="wq" id="wq"></div>
         <div class="chips" id="sch"><button class="chip on" data-k="val">평가금액순</button><button class="chip" data-k="dc">오늘 등락순</button><button class="chip" data-k="ret">수익률순</button><button class="chip" data-k="pl">손익순</button></div>
         <div id="allList"></div>
+        </div>
       </div>
     </section>
 
     <!-- HEALTH -->
     <section class="pg" id="p_hlt">
       <div class="pad">
-        <div class="sh" style="margin-top:4px"><h2>다가오는 실적 발표</h2></div>
-        <div class="ern" id="ern"></div>
-        <div class="chips" style="margin-top:16px" id="hch"><button class="chip on" data-k="w">비중순</button><button class="chip" data-k="pe">PER 낮은순</button><button class="chip" data-k="dd">고점 대비 하락순</button></div>
+        <div class="ern" id="ern" style="display:none"></div>
+        <div class="chips" style="margin-top:4px" id="hch"><button class="chip on" data-k="w">비중순</button><button class="chip" data-k="pe">PER 낮은순</button><button class="chip" data-k="dd">고점 대비 하락순</button></div>
         <div id="hList"></div>
         <p class="foot" style="padding:14px 0 0">Finnhub 무료 데이터 · 최근 공시 기준이라 실적 발표 직후가 가장 정확해요 · 매주 자동 저장</p>
+      </div>
+    </section>
+
+    <!-- CALENDAR -->
+    <section class="pg" id="p_cal">
+      <div class="pad">
+        <div class="chips" id="cch"><button class="chip on" data-k="all">전체</button><button class="chip" data-k="earn">실적</button><button class="chip" data-k="macro">경제지표</button><button class="chip" data-k="etc">휴장·만기</button></div>
+        <div id="cal"></div>
+        <p class="foot" style="padding:14px 0 0">시간은 모두 한국 시간 · 실적 시간은 장 전 07:00·장 후 16:30(미국 동부) 기준 추정 · 경제지표는 연준·노동부·상무부 공식 일정</p>
       </div>
     </section>
 
@@ -295,6 +328,7 @@ button{font-family:inherit;color:inherit}
     <button class="on" data-p="home"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>홈</button>
     <button data-p="stk"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M5 20V11M12 20V5M19 20v-7"/></svg>종목</button>
     <button data-p="hlt"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 5.6a5 5 0 0 0-7.1 0L12 7.3l-1.7-1.7a5 5 0 0 0-7.1 7.1L12 21.5l8.8-8.8a5 5 0 0 0 0-7.1z"/><path d="M3.5 12h4l1.5-3 3 6 1.5-3h3"/></svg>건강</button>
+    <button data-p="cal"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>일정</button>
     <button data-p="nws"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h13v14H6a2 2 0 0 1-2-2zM17 9h3v8a2 2 0 0 1-2 2M8 9h5M8 13h5"/></svg>뉴스</button>
   </nav>
 
@@ -319,6 +353,20 @@ button{font-family:inherit;color:inherit}
       <div class="diff" id="uD">변동 없음</div>
       <button class="cta" id="uGo" onclick="balGo()">업데이트</button>
       <p class="hint">수량을 0으로 하면 전량 매도로 기록돼요 · 여러 종목은 캡처를 Claude에게 보내도 돼요</p>
+    </div>
+  </div>
+
+  <div class="md" id="md3" onclick="if(event.target===this)wClose()">
+    <div class="sheet">
+      <div class="grab"></div>
+      <h3 id="wH">관심종목 추가</h3>
+      <label class="fl">티커</label>
+      <input class="in" id="wT" placeholder="예: NVDA" autocapitalize="characters" autocomplete="off" autocorrect="off" spellcheck="false">
+      <div class="ninfo" id="wI"></div>
+      <label class="fl">메모 <span class="opt">선택 · 왜 보는지</span></label>
+      <input class="in" id="wM" maxlength="60" placeholder="예: 실적 확인 후 진입 검토">
+      <button class="cta" id="wGo" onclick="wSave()" disabled>추가하기</button>
+      <button class="cta ghost" id="wDel" onclick="wDelGo()" style="display:none">관심종목에서 빼기</button>
     </div>
   </div>
 
@@ -363,7 +411,7 @@ button{font-family:inherit;color:inherit}
 var API='https://script.google.com/macros/s/AKfycbyZIqiFgh-C_1v7vuxIvbFLXgLS-DvHw5_Qtne2bKJ6dEF8bI77yuXAD6B5lQjFCXfK-Q/exec';
 var MODE='login',CH=[],TOK=null,D=null,LV=null,NEWS=null,DONE=[false,false,false],SETUP=false,PIN1=null,BUSY=false,liveTimer=null;
 var COLS=['#0E8A3E','#3BE477','#A3EFBC','#9AA1AB','#C3C8CF','#E2E5E9','#EEF0F2'];
-var TT={home:'💰 포트폴리오',stk:'📈 보유 종목',hlt:'🩺 종목 건강',nws:'📰 뉴스'};
+var TT={home:'💰 포트폴리오',stk:'📈 종목',hlt:'🩺 종목 건강',cal:'🗓️ 일정',nws:'📰 뉴스'};
 function $(i){return document.getElementById(i)}
 function sget(k){try{return localStorage.getItem(k)}catch(e){return null}}
 function sset(k,v){try{if(v===null)localStorage.removeItem(k);else localStorage.setItem(k,v)}catch(e){}}
@@ -417,7 +465,7 @@ function pinDone(v){if(MODE==='chg')return chgDone(v);
 /* ---------- 불러오기 ---------- */
 function setStt(t,stale){var e=$('stt');e.innerHTML='<i class="lv"></i>'+t;e.classList.toggle('st',!!stale)}
 function showErr(t,s){$('errT').textContent=t;$('errS').textContent=s||'';$('err').classList.add('on')}
-function reloadAll(fresh){if(!TOK)return;var ph=$('ph'),rf=$('rf');if(!D)ph.classList.add('ld');rf.classList.add('spin');$('err').classList.remove('on');
+function reloadAll(fresh){if(!TOK)return;if(fresh){if($('p_cal').classList.contains('on'))loadCal(true);else CAL=null;if(SEG==='watch')loadWatch()}var ph=$('ph'),rf=$('rf');if(!D)ph.classList.add('ld');rf.classList.add('spin');$('err').classList.remove('on');
   api('data',fresh?'&fresh=1':'').then(function(j){if(!j.ok)throw new Error(j.err||'data');D=j.d;DONE=(D.plan&&D.plan.done)||DONE;sset('lime_d',JSON.stringify(D));render();return live()})
   .catch(function(e){if(e.message==='auth')return;if(D){render();showErr('데이터를 못 불러왔어요','마지막 값('+(D.asOf||'')+')을 보여주는 중이에요');setStt((D.asOf||'')+' 기준 · 지연',true)}else showErr('서버에 연결하지 못했어요','인터넷 연결을 확인하고 다시 시도해 주세요')})
   .then(function(){ph.classList.remove('ld');rf.classList.remove('spin')});}
@@ -574,8 +622,46 @@ $('nch').onclick=function(e){var b=e.target.closest('.chip');if(!b)return;NK=b.d
 
 /* 탭 */
 function go(p){[].forEach.call(document.querySelectorAll('.pg'),function(x){x.classList.toggle('on',x.id==='p_'+p)});[].forEach.call(document.querySelectorAll('#tb button'),function(b){b.classList.toggle('on',b.dataset.p===p)});
-  $('ttl').textContent=TT[p];$('sc').scrollTop=0;sset('lime_tab',p);if(p==='nws'&&TOK)loadNews()}
+  $('ttl').textContent=TT[p];$('sc').scrollTop=0;sset('lime_tab',p);if(p==='nws'&&TOK)loadNews();if(p==='cal'&&TOK)loadCal();if(p==='stk'&&SEG==='watch'&&TOK)loadWatch()}
 $('tb').onclick=function(e){var b=e.target.closest('button');if(b)go(b.dataset.p)};
+
+/* 일정 */
+var CAL=null,CK='all',WD=['일','월','화','수','목','금','토'];
+function loadCal(force){if(CAL&&!force)return renderCal();$('cal').innerHTML=[1,2,3].map(function(){return '<div class="sk"><i style="width:30%"></i><i style="width:90%;height:14px"></i></div>'}).join('');
+  api('cal').then(function(j){CAL=j.ok?j.d:[];renderCal()}).catch(function(e){if(e.message!=='auth')$('cal').innerHTML='<p class="empty">일정을 불러오지 못했어요</p>'})}
+function renderCal(){var L=CAL.filter(function(e){return CK==='all'||(CK==='etc'?(e.k==='hol'||e.k==='opx'):e.k===CK)});
+  if(!L.length){$('cal').innerHTML='<p class="empty">90일 안에 일정이 없어요</p>';return}
+  var td=new Date(),t0=new Date(td.getFullYear(),td.getMonth(),td.getDate()),g={},ord=[];L.forEach(function(e){if(!g[e.d]){g[e.d]=[];ord.push(e.d)}g[e.d].push(e)});
+  var held={};(M?M.H:[]).forEach(function(h){held[h.t]=h});
+  $('cal').innerHTML=ord.map(function(d){var p=d.split('-'),dt=new Date(+p[0],p[1]-1,+p[2]),dd=Math.round((dt-t0)/864e5);
+    return '<div class="cd'+(dd===0?' today':'')+'"><div class="cdh"><b>'+(+p[1])+'/'+(+p[2])+' ('+WD[dt.getDay()]+')</b><span>'+(dd===0?'오늘':dd===1?'내일':'D-'+dd)+'</span></div>'+
+      g[d].map(function(e){var h=e.tk&&held[e.tk],ic=e.k==='earn'?(h&&h.logo?'<img src="'+esc(h.logo)+'" alt="">':'<i>'+esc(e.tk.slice(0,4))+'</i>'):'<i>'+({macro:{fomc:'🏛️',cpi:'🛒',job:'👷',pce:'📊'}[e.id]||'📊',hol:'🚫',opx:'⏳'}[e.k]||'📅')+'</i>';
+        return '<div class="ce k-'+e.k+'"><span class="cic">'+ic+'</span><div><b>'+esc(e.t)+(e.w?' <em>관심</em>':'')+'</b><span>'+(e.tm?e.tm+' · ':'')+esc(e.s||'')+'</span></div></div>'}).join('')+'</div>'}).join('')}
+$('cch').onclick=function(e){var b=e.target.closest('.chip');if(!b)return;CK=b.dataset.k;[].forEach.call(this.children,function(x){x.classList.toggle('on',x===b)});if(CAL)renderCal()};
+
+/* 관심종목 */
+var SEG='hold',WL=null,WI=null,WE=null,wtm=null,wseq=0;
+$('seg').onclick=function(e){var b=e.target.closest('button');if(!b)return;SEG=b.dataset.v;[].forEach.call(this.children,function(x){x.classList.toggle('on',x===b)});
+  $('stkH').style.display=SEG==='hold'?'':'none';$('stkW').style.display=SEG==='watch'?'':'none';if(SEG==='watch')loadWatch()};
+function loadWatch(){if(!WL)$('wList').innerHTML='<div class="sk"><i style="width:40%"></i><i style="width:80%;height:14px"></i></div>';
+  api('watch').then(function(j){WL=j.ok?j.d:[];renderWatch()}).catch(function(e){if(e.message!=='auth'&&!WL)$('wList').innerHTML='<p class="empty">불러오지 못했어요</p>'})}
+function renderWatch(){if(!WL.length){$('wList').innerHTML='<p class="empty">아직 관심종목이 없어요<br>사고 싶은 종목을 담아두세요</p>';return}
+  $('wList').innerHTML=WL.map(function(w,i){var dd=w.hi&&w.p?(w.p/w.hi-1)*100:null;
+    return '<div class="row" onclick="wOpen('+i+')">'+lgo({t:w.t,logo:w.logo})+'<div class="nm"><b>'+w.t+'</b><span>'+esc(w.memo||w.n||'')+'</span></div><div class="rt"><b>'+(w.p?'$'+f(w.p):'-')+'</b><span class="'+c(w.dp)+'">'+(w.dp!=null?'오늘 '+pc(w.dp):'')+'</span>'+(dd!=null?'<small class="hi">고점 대비 '+pc(dd)+'</small>':'')+'</div></div>'}).join('')}
+function wOpen(i){WE=i==null?null:WL[i];WI=null;$('md3').classList.add('on');$('wH').textContent=WE?WE.t+' 관심종목':'관심종목 추가';
+  $('wT').value=WE?WE.t:'';$('wT').disabled=!!WE;$('wM').value=WE?(WE.memo||''):'';$('wI').innerHTML=WE?'<div><b>'+esc(WE.n||WE.t)+'</b>'+(WE.p?'$'+f(WE.p):'')+'</div>':'';
+  $('wGo').textContent=WE?'메모 저장':'추가하기';$('wGo').disabled=!WE;$('wDel').style.display=WE?'':'none';if(!WE)setTimeout(function(){$('wT').focus()},250)}
+function wClose(){$('md3').classList.remove('on')}
+$('wT').oninput=function(){var v=this.value.toUpperCase().replace(/\s+/g,'');if(v!==this.value)this.value=v;WI=null;$('wGo').disabled=true;clearTimeout(wtm);
+  if(!v){$('wI').innerHTML='';return}$('wI').innerHTML='<span>확인 중…</span>';var my=++wseq;
+  wtm=setTimeout(function(){api('tk','&tk='+encodeURIComponent(v)).then(function(j){if(my!==wseq)return;
+    if(!j.ok){$('wI').innerHTML='<span class="warn">'+esc(j.err||'찾지 못했어요')+'</span>';return}WI=j;
+    $('wI').innerHTML=(j.logo?'<img src="'+esc(j.logo)+'" alt="">':'')+'<div><b>'+esc(j.name)+'</b>$'+f(j.p)+' <span class="'+(j.dp>=0?'up':'dn')+'">'+(j.dp>=0?'+':'')+f(j.dp)+'%</span></div>';$('wGo').disabled=false})
+    .catch(function(e){if(my===wseq&&e.message!=='auth')$('wI').innerHTML='<span class="warn">확인하지 못했어요</span>'})},500)};
+function wSave(){var b=$('wGo'),tk=WE?WE.t:(WI&&WI.tk);if(!tk)return;b.disabled=true;
+  post({a:'wadd',tk:tk,memo:$('wM').value}).then(function(j){b.disabled=false;if(j.ok){wClose();toast(j.msg);CAL=null;loadWatch()}else toast(j.err||'저장 실패')}).catch(function(e){b.disabled=false;if(e.message!=='auth')toast('저장하지 못했어요')})}
+function wDelGo(){if(!WE||!confirm(WE.t+'를 관심종목에서 뺄까요?'))return;
+  post({a:'wdel',tk:WE.t}).then(function(j){if(j.ok){wClose();toast(j.msg);CAL=null;WL=WL.filter(function(x){return x.t!==WE.t});renderWatch()}}).catch(function(){})}
 
 /* 잔고 업데이트 */
 var US=null,NI=null,NTH='',NRL='',ntm=null,nseq=0;
