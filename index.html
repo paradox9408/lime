@@ -234,8 +234,8 @@ button{font-family:inherit;color:inherit}
 .pedit{width:100%;margin-top:10px;border:0;background:var(--bg);border-radius:10px;padding:10px;font-weight:700;font-size:14px;color:var(--tx);cursor:pointer;font-family:inherit}
 .sw{position:relative;overflow:hidden}
 .sw .swr{position:relative;background:var(--bg);transition:transform .22s ease;z-index:1}
-.sw.open .swr{transform:translateX(-84px)}
-.swd{position:absolute;right:0;top:0;bottom:0;width:84px;border:0;background:#F04452;color:#fff;font-weight:800;font-size:15px;font-family:inherit;cursor:pointer}
+.sw.open .swr{transform:translateX(-96px)}
+.swd{position:absolute;right:0;top:10px;bottom:10px;width:80px;border-radius:14px;border:0;background:#F04452;color:#fff;font-weight:800;font-size:15px;font-family:inherit;cursor:pointer}
 .wmemo{font-size:14px;color:var(--tx2);margin:12px 0 0}
 .mch .up{color:var(--up)}.mch .dn{color:var(--down)}
 </style>
@@ -732,10 +732,10 @@ function wDet(w,i){var b='<div class="kv"><div><small>현재가</small><b>'+(w.p
   return '<div class="det'+(WOPEN[w.t]?' on':'')+'" id="wd_'+i+'">'+b+'</div>'}
 function wTg(i){var sw=document.querySelector('.sw[data-i="'+i+'"]');if(sw&&sw._sw&&Date.now()-sw._sw<400)return;if(sw&&sw.classList.contains('open')){sw.classList.remove('open');return}var t=WL[i].t;WOPEN[t]=!WOPEN[t];$('wd_'+i).classList.toggle('on',WOPEN[t])}
 function swipe(){[].forEach.call(document.querySelectorAll('.sw'),function(sw){var r=sw.querySelector('.swr'),x0=0,y0=0,dx=0,on=false,base=0;
-  r.addEventListener('touchstart',function(e){x0=e.touches[0].clientX;y0=e.touches[0].clientY;dx=0;on=null;base=sw.classList.contains('open')?-84:0;r.style.transition='none'},{passive:true});
+  r.addEventListener('touchstart',function(e){x0=e.touches[0].clientX;y0=e.touches[0].clientY;dx=0;on=null;base=sw.classList.contains('open')?-96:0;r.style.transition='none'},{passive:true});
   r.addEventListener('touchmove',function(e){var mx=e.touches[0].clientX-x0,my=e.touches[0].clientY-y0;if(on===null)on=Math.abs(mx)>Math.abs(my)&&Math.abs(mx)>6;if(!on)return;dx=Math.max(-110,Math.min(0,base+mx));r.style.transform='translateX('+dx+'px)'},{passive:true});
   r.addEventListener('touchend',function(){r.style.transition='';r.style.transform='';if(!on)return;
-    [].forEach.call(document.querySelectorAll('.sw.open'),function(o){if(o!==sw)o.classList.remove('open')});sw.classList.toggle('open',dx<-42);
+    [].forEach.call(document.querySelectorAll('.sw.open'),function(o){if(o!==sw)o.classList.remove('open')});sw.classList.toggle('open',dx<-48);
     sw._sw=Date.now()})})}
 function wDelT(i){var w=WL[i];if(!w)return;post({a:'wdel',tk:w.t}).then(function(j){if(j.ok){toast(j.msg);CAL=null;WL=WL.filter(function(x){return x.t!==w.t});renderWatch()}}).catch(function(){toast('삭제하지 못했어요')});
   var sw=document.querySelector('.sw[data-i="'+i+'"]');if(sw){sw.style.opacity='.3'}}
