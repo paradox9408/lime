@@ -69,7 +69,7 @@ button{font-family:inherit;color:inherit}
 /* stock rows */
 .row{display:flex;align-items:center;gap:12px;padding:12px 0;cursor:pointer}
 .lg{width:42px;height:42px;border-radius:50%;background:var(--key-soft);color:var(--key-tx);display:grid;place-items:center;font-size:12px;font-weight:800;flex:0 0 42px;letter-spacing:-.3px}
-.lg.im{background:#fff;border:1px solid var(--ln);overflow:hidden}.lg.im img{width:100%;height:100%;object-fit:contain;padding:6px;display:block}
+.lg.im{background:#fff;border:1px solid var(--ln);overflow:hidden}.lg.im img{width:100%;height:100%;object-fit:cover;padding:0;display:block}
 .nm{flex:1;min-width:0}
 .nm b{display:block;font-size:16px;font-weight:700}
 .nm span{font-size:13px;color:var(--mu)}
@@ -169,6 +169,18 @@ button{font-family:inherit;color:inherit}
 .chg{font-size:11px;font-weight:700;margin-left:4px}
 .sp2{display:none}.cta:disabled{opacity:.45}
 .mc{touch-action:pan-y}
+
+.srow{width:100%;display:flex;justify-content:space-between;align-items:center;border:0;background:var(--card);border-radius:14px;padding:16px;font-size:16px;font-weight:600;margin-bottom:8px;cursor:pointer;text-align:left}.srow em{font-style:normal;color:var(--mu);font-size:20px}
+.obx{display:none;position:absolute!important;top:calc(14px + env(safe-area-inset-top));right:16px;width:40px;height:40px;border-radius:50%;border:0;background:var(--card);font-size:16px;cursor:pointer;z-index:3}
+.ob.chg .obx{display:block}
+
+.qt{display:block;width:calc(100% - 40px);margin:2px 20px 12px;border:0;background:none;text-align:left;padding:2px 0 2px 12px;border-left:3px solid var(--key);cursor:pointer;color:var(--tx);font-family:inherit}
+.qt span{display:block;font-size:14px;font-weight:600;line-height:1.5;letter-spacing:-.2px}.qt small{display:block;font-size:12px;color:var(--mu);margin-top:3px}
+.qt.fade span,.qt.fade small{animation:fd .3s ease}
+.spl{position:absolute;inset:0;z-index:35;background:var(--bg);display:none;flex-direction:column;align-items:center;padding:calc(130px + env(safe-area-inset-top)) 32px 0;text-align:center;overflow:hidden;cursor:pointer}
+.spl.on{display:flex;animation:fd .3s ease}.spl.out{opacity:0;transition:opacity .35s}
+.spq{position:relative;z-index:1}.spq p{font-size:22px;font-weight:800;line-height:1.5;letter-spacing:-.5px;margin:0 0 14px;word-break:keep-all}.spq small{font-size:14px;color:var(--mu);font-weight:600}
+.spl .obc{position:absolute;left:0;right:0;bottom:0;width:100%;height:50%}
 </style>
 </head>
 <body>
@@ -176,12 +188,14 @@ button{font-family:inherit;color:inherit}
   <div class="scroll" id="sc">
     <div class="top">
       <div><h1 id="ttl">💰 포트폴리오</h1><small id="stt"><i class="lv"></i>불러오는 중…</small></div>
-      <button class="ic" id="rf" aria-label="새로고침" onclick="reloadAll(true)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/></svg></button>
+      <div style="display:flex;gap:8px"><button class="ic" aria-label="설정" onclick="openSet()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+      <button class="ic" id="rf" aria-label="새로고침" onclick="reloadAll(true)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/></svg></button></div>
     </div>
     <div class="err" id="err"><span>⚠️</span><div><b id="errT">시세를 못 불러왔어요</b><small id="errS">마지막 값을 보여주는 중이에요</small></div><button onclick="reloadAll(true)">다시 시도</button></div>
 
     <!-- HOME -->
     <section class="pg on" id="p_home">
+      <button class="qt" id="qt" onclick="nextQuote()"><span id="qtT"></span><small id="qtA"></small></button>
       <div class="hero">
         <div class="l">총 평가금액</div>
         <div class="v" id="hV">$0.00</div>
@@ -278,7 +292,18 @@ button{font-family:inherit;color:inherit}
     </div>
   </div>
 
+  <div class="md" id="md2" onclick="if(event.target===this)this.classList.remove('on')">
+    <div class="sheet">
+      <div class="grab"></div>
+      <h3>설정</h3>
+      <button class="srow" onclick="startChg()"><span>🔒 비밀번호 변경</span><em>›</em></button>
+      <button class="srow" onclick="if(confirm('로그아웃할까요?')){post({a:'logout'}).catch(function(){});$('md2').classList.remove('on');logout()}"><span>🚪 로그아웃</span><em>›</em></button>
+      <p class="hint">라임 · 데이터는 구글 시트에서 불러와요</p>
+    </div>
+  </div>
+
   <div class="ob" id="ob">
+    <button class="obx" id="obX" onclick="closeChg()" aria-label="닫기">✕</button>
     <h2>라임</h2>
     <p id="obP">급할 것 없어요, <b>긴 항해니까</b></p>
     <label class="pin" id="pin" for="obk"><i></i><i></i><i></i><i></i><i></i><i></i></label>
@@ -293,11 +318,20 @@ button{font-family:inherit;color:inherit}
     </svg>
   </div>
 
+  <div class="spl" id="spl" onclick="hideSplash()">
+    <div class="spq"><p id="splT"></p><small id="splA"></small></div>
+    <svg class="obc" viewBox="112 50 210 250" preserveAspectRatio="xMidYMax meet">
+      <circle cx="250" cy="342" r="236" fill="#1E9E4C"/>
+      <circle cx="250" cy="342" r="218" fill="#3BE477"/>
+      <rect x="150" y="196" width="22" height="46" rx="11" fill="#0B1F12"/>
+      <rect x="226" y="176" width="22" height="46" rx="11" fill="#0B1F12"/>
+    </svg>
+  </div>
   <div class="toast" id="toast"></div>
 </div>
 <script>
 var API='https://script.google.com/macros/s/AKfycbyZIqiFgh-C_1v7vuxIvbFLXgLS-DvHw5_Qtne2bKJ6dEF8bI77yuXAD6B5lQjFCXfK-Q/exec';
-var TOK=null,D=null,LV=null,NEWS=null,DONE=[false,false,false],SETUP=false,PIN1=null,BUSY=false,liveTimer=null;
+var MODE='login',CH=[],TOK=null,D=null,LV=null,NEWS=null,DONE=[false,false,false],SETUP=false,PIN1=null,BUSY=false,liveTimer=null;
 var COLS=['#0E8A3E','#3BE477','#A3EFBC','#9AA1AB','#C3C8CF','#E2E5E9','#EEF0F2'];
 var TT={home:'💰 포트폴리오',stk:'📈 보유 종목',hlt:'🩺 종목 건강',nws:'📰 뉴스'};
 function $(i){return document.getElementById(i)}
@@ -316,7 +350,7 @@ function api(a,q){var u=API+'?a='+a+'&t='+encodeURIComponent(TOK||'')+(q||'')+'&
   return fetch(u,{credentials:'omit'}).then(function(r){return r.json()}).then(chk)}
 function post(o){o.t=TOK;return fetch(API,{method:'POST',credentials:'omit',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(o)}).then(function(r){return r.json()}).then(chk)}
 function chk(j){if(j&&j.auth===false){logout(true);throw new Error('auth')}return j}
-function logout(exp){TOK=null;sset('lime_t',null);showOb();if(exp)$('obM').textContent='다시 로그인해 주세요';}
+function logout(exp){MODE='login';CH=[];$('ob').classList.remove('chg');TOK=null;sset('lime_t',null);showOb();if(exp)$('obM').textContent='다시 로그인해 주세요';}
 
 /* ---------- 로그인 ---------- */
 function showOb(){var o=$('ob');o.classList.remove('off');$('obk').value='';pinIn($('obk'),true);$('obM').textContent='';
@@ -329,12 +363,24 @@ function pinIn(el,silent){el.value=el.value.replace(/\D/g,'').slice(0,6);var n=e
   [].forEach.call(document.querySelectorAll('#pin i'),function(d,i){d.classList.toggle('on',i<n)});
   if(!silent&&n===6&&!BUSY){var v=el.value;setTimeout(function(){pinDone(v)},150)}}
 function shake(m){var p=$('pin');p.classList.remove('sh');void p.offsetWidth;p.classList.add('sh');$('obM').textContent=m||'';$('obk').value='';pinIn($('obk'),true)}
-function pinDone(v){
+function openSet(){$('md2').classList.add('on')}
+function startChg(){$('md2').classList.remove('on');MODE='chg';CH=[];var o=$('ob');o.classList.add('chg');o.classList.remove('off');$('obP').innerHTML='<b>현재 비밀번호</b>를 입력해 주세요';$('obS').textContent='🔒 비밀번호 변경';$('obM').textContent='';$('obk').value='';pinIn($('obk'),true);setTimeout(function(){$('obk').focus()},200)}
+function closeChg(){MODE='login';CH=[];var o=$('ob');o.classList.remove('chg');o.classList.add('off');$('obk').blur()}
+function chgDone(v){var k=$('obk');
+  if(CH.length===0){CH=[v];$('obP').innerHTML='<b>새 비밀번호</b> 6자리를 입력해 주세요';k.value='';pinIn(k,true);$('obM').textContent='';return}
+  if(CH.length===1){if(v===CH[0]){shake('지금 비밀번호와 다른 숫자로 정해 주세요');return}CH.push(v);$('obP').innerHTML='한 번 더 <b>새 비밀번호</b>를 입력해 주세요';k.value='';pinIn(k,true);$('obM').textContent='';return}
+  if(v!==CH[1]){CH=[CH[0]];shake('새 비밀번호가 서로 달라요. 다시 입력해 주세요');$('obP').innerHTML='<b>새 비밀번호</b> 6자리를 입력해 주세요';return}
+  BUSY=true;$('obM').style.color='var(--mu)';$('obM').textContent='바꾸는 중…';
+  post({a:'chpin',cur:CH[0],nw:v}).then(function(j){BUSY=false;$('obM').style.color='';
+    if(j.ok){closeChg();toast('비밀번호를 바꿨어요 🔒')}
+    else{CH=[];shake(j.err||'다시 시도해 주세요');$('obP').innerHTML='<b>현재 비밀번호</b>를 입력해 주세요'}
+  }).catch(function(e){BUSY=false;$('obM').style.color='';if(e.message!=='auth'){CH=[];shake('서버에 연결하지 못했어요');$('obP').innerHTML='<b>현재 비밀번호</b>를 입력해 주세요'}})}
+function pinDone(v){if(MODE==='chg')return chgDone(v);
   if(SETUP&&!PIN1){PIN1=v;$('obP').innerHTML='한 번 더 <b>같은 6자리</b>를 입력해 주세요';$('obk').value='';pinIn($('obk'),true);$('obM').textContent='';return}
   if(SETUP&&PIN1&&PIN1!==v){PIN1=null;shake('두 번 입력한 숫자가 달라요. 처음부터 다시 정해 주세요');$('obP').innerHTML='처음이에요! <b>사용할 비밀번호 6자리</b>를 정해 주세요';return}
   BUSY=true;$('obM').style.color='var(--mu)';$('obM').textContent='확인 중…';
   post({a:'login',pin:v}).then(function(j){BUSY=false;$('obM').style.color='';
-    if(j.ok&&j.t){TOK=j.t;sset('lime_t',TOK);PIN1=null;$('obk').blur();$('ob').classList.add('off');if(j.first)toast('비밀번호를 정했어요 🍋');reloadAll(false);startLive();}
+    if(j.ok&&j.t){TOK=j.t;sset('lime_t',TOK);PIN1=null;$('obk').blur();$('ob').classList.add('off');if(j.first)toast('비밀번호를 정했어요 🍋');showQuote(pickQuote());reloadAll(false);startLive();}
     else shake(j.err||'다시 시도해 주세요');
   }).catch(function(){BUSY=false;$('obM').style.color='';shake('서버에 연결하지 못했어요')});}
 
@@ -513,10 +559,40 @@ function balGo(){var b=$('uGo');b.disabled=true;b.textContent='저장 중…';
   post({a:'bal',tk:US,q:$('uQ').value,avg:$('uA').value,sp:$('uSp').value}).then(function(j){b.textContent='업데이트';if(j.ok){cl();toast(j.msg||'저장했어요');reloadAll(true)}else{b.disabled=false;toast(j.err||'저장 실패')}})
   .catch(function(e){b.textContent='업데이트';b.disabled=false;if(e.message!=='auth')toast('저장하지 못했어요')})}
 
+
+/* 명언 — 실제로 한 말로 확인된 것만 */
+var QUOTES=[
+ ['남들이 탐욕스러울 때 두려워하고, 남들이 두려워할 때 탐욕스러워져라.','워런 버핏','d'],
+ ['우리가 가장 좋아하는 보유 기간은 \'영원히\'다.','워런 버핏',''],
+ ['가격은 당신이 지불하는 것이고, 가치는 당신이 얻는 것이다.','워런 버핏',''],
+ ['물이 빠져야 누가 벌거벗고 수영했는지 알 수 있다.','워런 버핏','u'],
+ ['시간은 훌륭한 기업에게는 친구이고, 평범한 기업에게는 적이다.','워런 버핏',''],
+ ['큰돈은 사고파는 데서가 아니라 기다리는 데서 나온다.','찰리 멍거','d'],
+ ['복리의 첫 번째 규칙: 불필요하게 끊지 마라.','찰리 멍거','d'],
+ ['무엇을 가졌는지, 왜 가졌는지 알아라.','피터 린치',''],
+ ['조정 자체보다 조정에 대비하거나 예측하려다 잃은 돈이 훨씬 많다.','피터 린치','d'],
+ ['주식으로 돈을 버는 진짜 비결은 겁먹고 빠져나오지 않는 것이다.','피터 린치','d'],
+ ['단기적으로 시장은 투표 기계지만, 장기적으로는 저울이다.','벤저민 그레이엄',''],
+ ['투자자의 가장 큰 문제, 심지어 최악의 적은 바로 자기 자신일 가능성이 크다.','벤저민 그레이엄','d'],
+ ['강세장은 비관 속에 태어나 회의 속에 자라고, 낙관 속에 성숙해 행복감 속에 죽는다.','존 템플턴','du'],
+ ['투자에서 가장 위험한 네 단어는 \'이번엔 다르다\'이다.','존 템플턴','u'],
+ ['수정 구슬에 기대 사는 자는 깨진 유리를 먹게 된다.','레이 달리오','u'],
+ ['변동성은 벌금이 아니라 수수료다.','모건 하우절','d']
+];
+var QI=-1;
+function qctx(){var m=M;if(!m&&D){try{m=model()}catch(e){}}if(!m)return '';var v=m.idx&&m.idx.vix&&m.idx.vix.p;if(m.dayP<=-2||(v&&v>=25))return 'd';if(m.dayP>=3)return 'u';return ''}
+function pickQuote(force){var cx=qctx(),pool=[];QUOTES.forEach(function(q,i){if(!cx||q[2].indexOf(cx)>=0)pool.push(i)});if(!pool.length)pool=QUOTES.map(function(q,i){return i});
+  var last=+(sget('lime_q')||-1),c=pool.filter(function(i){return i!==last&&i!==QI});if(!c.length)c=pool;var i=c[Math.floor(Math.random()*c.length)];QI=i;sset('lime_q',String(i));return QUOTES[i]}
+function showQuote(q){$('qtT').textContent='“'+q[0]+'”';$('qtA').textContent='— '+q[1];var e=$('qt');e.classList.remove('fade');void e.offsetWidth;e.classList.add('fade')}
+function nextQuote(){showQuote(pickQuote())}
+function splash(){var t=new Date().toDateString();if(sget('lime_spl')===t)return false;sset('lime_spl',t);var q=pickQuote();$('splT').textContent='“'+q[0]+'”';$('splA').textContent='— '+q[1];$('spl').classList.add('on');showQuote(q);setTimeout(hideSplash,2600);return true}
+function hideSplash(){var s=$('spl');if(!s.classList.contains('on'))return;s.classList.add('out');setTimeout(function(){s.classList.remove('on','out')},350)}
+
 /* 시작 */
 (function(){TOK=sget('lime_t');var t=sget('lime_tab');if(t&&TT[t])go(t);
   if(!TOK){showOb();return}$('ob').classList.add('off');
   var c=sget('lime_d');if(c){try{D=JSON.parse(c);DONE=(D.plan&&D.plan.done)||DONE;render();setStt((D.asOf||'')+' 기준',true)}catch(e){}}
+  if(!splash())showQuote(pickQuote());
   reloadAll(false);startLive()})();
 </script>
 </body>
