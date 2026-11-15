@@ -181,6 +181,26 @@ button{font-family:inherit;color:inherit}
 .spl.on{display:flex;animation:fd .3s ease}.spl.out{opacity:0;transition:opacity .35s}
 .spq{position:relative;z-index:1}.spq p{font-size:22px;font-weight:800;line-height:1.5;letter-spacing:-.5px;margin:0 0 14px;word-break:keep-all}.spq small{font-size:14px;color:var(--mu);font-weight:600}
 .spl .obc{position:absolute;left:0;right:0;bottom:0;width:100%;height:50%}
+.chips.wrap{flex-wrap:wrap;overflow:visible}
+.chips.wrap .chip{padding:7px 12px;font-size:13px}
+.fl .opt{font-weight:500;color:var(--mu);font-size:12px;margin-left:4px}
+.ninfo{display:flex;align-items:center;gap:10px;min-height:20px;margin-top:8px;font-size:14px;color:var(--tx2)}
+.ninfo:empty{display:none}
+.ninfo img{width:32px;height:32px;border-radius:50%;object-fit:cover;flex:0 0 auto;background:var(--card)}
+.ninfo b{color:var(--tx);display:block;font-size:15px}
+.ninfo .up{color:var(--up)}.ninfo .dn{color:var(--down)}
+.ninfo .warn{color:var(--up)}
+.pill.pu{background:#fff;color:#E0263A}.pill.pd{background:#fff;color:#1B64DA}
+.today b.tu{color:#C81E30}.today b.td{color:#0B4FC0}
+.ses{display:table;margin-top:6px;font-size:11px;font-weight:700;padding:3px 8px;border-radius:999px;background:rgba(0,0,0,.08);vertical-align:1px}
+.ses.on{background:rgba(255,255,255,.55)}
+.hm{padding-top:18px}.hm .sh{display:flex;align-items:baseline;justify-content:space-between}
+.heat{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:4px}
+.ht{border-radius:12px;padding:10px 10px 8px;color:var(--tx);min-width:0}
+.ht b{display:block;font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ht span{display:block;font-size:16px;font-weight:800;margin-top:2px}
+.ht small{font-size:11px;opacity:.7}
+.ht.dk{color:#fff}
 </style>
 </head>
 <body>
@@ -211,6 +231,7 @@ button{font-family:inherit;color:inherit}
         <div class="mini"><small>VIX 공포지수</small><b id="iV">-</b><em id="iVc"></em></div>
         <div class="mini"><small>원/달러</small><b id="iF">-</b><em style="color:var(--mu)">원</em></div>
       </div>
+      <div class="pad hm"><div class="sh"><h2>섹터 히트맵</h2><span class="mu2">오늘 등락 · 미국 섹터 ETF</span></div><div class="heat" id="heat"></div></div>
       <div class="band"></div>
       <div class="pad">
         <div class="sg" id="sg">
@@ -284,6 +305,15 @@ button{font-family:inherit;color:inherit}
       <p class="sub">증권사 앱에 보이는 수량·평단만 그대로 입력하세요</p>
       <label class="fl">종목</label>
       <div class="tk" id="uSel"></div>
+      <div id="uNew" style="display:none">
+        <label class="fl">티커</label>
+        <input class="in" id="uT" placeholder="예: NVDA" autocapitalize="characters" autocomplete="off" autocorrect="off" spellcheck="false">
+        <div class="ninfo" id="uI"></div>
+        <label class="fl">테마 <span class="opt">선택</span></label>
+        <div class="chips wrap" id="uTh"></div>
+        <label class="fl">역할 <span class="opt">선택</span></label>
+        <div class="chips wrap" id="uRl"></div>
+      </div>
       <div class="two"><div><label class="fl">보유 수량</label><input class="in" id="uQ" inputmode="decimal"></div><div><label class="fl">평단 (USD)</label><input class="in" id="uA" inputmode="decimal"></div></div>
       <div id="uSpW" style="display:none"><label class="fl">매도가 (USD · 선택)</label><input class="in" id="uSp" inputmode="decimal" placeholder="비우면 종가로 기록"></div>
       <div class="diff" id="uD">변동 없음</div>
@@ -411,14 +441,20 @@ var M=null;
 function render(){if(!D)return;M=model();renderHome();renderStocks();renderHealth();if(NEWS)renderNews()}
 function renderHome(){var m=M;
   $('hV').textContent='$'+f(m.tv);$('hK').textContent='약 '+Math.round(m.tv*m.fx/1e4).toLocaleString()+'만 원';
-  $('hP').textContent=(m.pl>=0?'▲':'▼')+' $'+f(Math.abs(m.pl))+' · '+pc(m.ret*100);
-  $('hD').innerHTML='지난 거래일 대비 <b>'+ar(m.day)+' $'+f(Math.abs(m.day))+' ('+pc(m.dayP)+')</b>';
+  var hp=$('hP');hp.textContent=(m.pl>=0?'▲':'▼')+' $'+f(Math.abs(m.pl))+' · '+pc(m.ret*100);hp.className='pill '+(m.pl>=0?'pu':'pd');
+  var ms=LV&&LV.ms,sl=!ms?'':ms.s==='regular'?'정규장 · 실시간':ms.s==='pre-market'?'프리장 · 전일 종가 기준':ms.s==='post-market'?'애프터 · 정규장 종가 기준':ms.hol?'휴장 · '+ms.hol:'장 마감 · 종가 기준';
+  $('hD').innerHTML=(ms&&ms.s==='regular'?'오늘':'지난 거래일 대비')+' <b class="'+(m.day>=0?'tu':'td')+'">'+ar(m.day)+' $'+f(Math.abs(m.day))+' ('+pc(m.dayP)+')</b>'+(sl?'<span class="ses'+(ms.s==='regular'?' on':'')+'">'+sl+'</span>':'');
+  heat();
   spark(m);
   var x=m.idx;function ix(id,o,dg){$(id).textContent=o&&o.p?f(o.p,dg):'-';var e=$(id+'c');if(o&&o.cp!=null){e.className=c(o.cp);e.textContent=ar(o.cp)+' '+Math.abs(o.cp*100).toFixed(1)+'%'}}
   ix('iN',x.ndx,0);ix('iS',x.spx,0);ix('iV',x.vix,1);
   if(x.vix&&x.vix.p){var v=x.vix.p,md=v<15?'평온':v<20?'보통':v<30?'불안':'공포';$('iV').innerHTML=f(v,1)+' <span class="mood">'+md+'</span>'}
   $('iF').textContent=f(m.fx,1);
   plan();weights()}
+function heat(){var a=(LV&&LV.sec)||[],w=$('heat');if(!a.length){w.parentNode.style.display='none';return}w.parentNode.style.display='';
+  a=a.slice().sort(function(x,y){return y[2]-x[2]});
+  w.innerHTML=a.map(function(x){var d=x[2],k=Math.min(Math.abs(d)/3,1),al=(0.12+k*0.78).toFixed(2),bg=d>=0?'rgba(240,68,82,'+al+')':'rgba(49,130,246,'+al+')';
+    return '<div class="ht'+(k>0.5?' dk':'')+'" style="background:'+bg+'"><b>'+x[1]+'</b><span>'+(d>0?'+':'')+d.toFixed(2)+'%</span><small>'+x[0]+'</small></div>'}).join('')}
 function spark(m){var tr=(D.trend||[]).slice(),today=(new Date().getMonth()+1)+'/'+new Date().getDate();
   if(tr.length&&tr[tr.length-1][0]===today)tr[tr.length-1]=[today,m.tv];else tr.push([today,m.tv]);
   var svg=$('spks'),W=300,H=64,vs=tr.map(function(r){return r[1]});if(vs.length<2){svg.innerHTML='';return}
@@ -539,15 +575,41 @@ function go(p){[].forEach.call(document.querySelectorAll('.pg'),function(x){x.cl
 $('tb').onclick=function(e){var b=e.target.closest('button');if(b)go(b.dataset.p)};
 
 /* 잔고 업데이트 */
-var US=null;
+var US=null,NI=null,NTH='',NRL='',ntm=null,nseq=0;
 function op(){if(!D){toast('데이터를 불러온 뒤에 할 수 있어요');return}$('md').classList.add('on');
-  $('uSel').innerHTML='<button type="button" class="nw" data-v="new">+ 추가</button>'+M.H.map(function(h,i){return '<button type="button" data-v="'+h.t+'"'+(i===0?' class="on"':'')+'>'+h.t+'</button>'}).join('');US=M.H[0].t;uFill()}
+  $('uSel').innerHTML='<button type="button" class="nw" data-v="new">+ 추가</button>'+M.H.map(function(h,i){return '<button type="button" data-v="'+h.t+'"'+(i===0?' class="on"':'')+'>'+h.t+'</button>'}).join('');US=M.H[0].t;uMode();uFill()}
 function cl(){$('md').classList.remove('on')}
-$('uSel').onclick=function(e){var b=e.target.closest('button');if(!b)return;if(b.dataset.v==='new'){toast('새 종목 추가는 준비 중이에요. Claude에게 말해 주세요');return}
-  [].forEach.call(this.children,function(x){x.classList.toggle('on',x===b)});US=b.dataset.v;uFill()};
+$('uSel').onclick=function(e){var b=e.target.closest('button');if(!b)return;
+  [].forEach.call(this.children,function(x){x.classList.toggle('on',x===b)});US=b.dataset.v==='new'?'__new':b.dataset.v;uMode();
+  if(US==='__new')newOpen();else uFill()};
+function isNew(){return US==='__new'}
+function uMode(){var n=isNew();$('uNew').style.display=n?'':'none';$('uGo').textContent=n?'추가하기':'업데이트';
+  document.querySelector('#md .hint').textContent=n?'티커·수량·평단만 있으면 돼요 · 테마와 역할은 나중에 시트에서 바꿀 수 있어요':'수량을 0으로 하면 전량 매도로 기록돼요 · 여러 종목은 캡처를 Claude에게 보내도 돼요';document.querySelector('#md .sub').textContent=n?'처음 사는 종목을 추가해요 · 시트에 종목 탭이 자동으로 만들어져요':'증권사 앱에 보이는 수량·평단만 그대로 입력하세요'}
 function cur(){return M.H.filter(function(h){return h.t===US})[0]}
 function uFill(){var h=cur();$('uQ').value=h.q;$('uA').value=h.avg.toFixed(2);$('uSp').value='';uDiff()}
-function uDiff(){var h=cur(),q=parseFloat($('uQ').value),a=parseFloat($('uA').value),d=q-h.q,D_=$('uD'),go_=$('uGo');$('uSpW').style.display=(q<h.q)?'':'none';
+function chipRow(id,arr,sel){$(id).innerHTML=arr.map(function(x){return '<button type="button" class="chip'+(x[0]===sel?' on':'')+'" data-v="'+esc(x[0])+'">'+esc(x[1])+'</button>'}).join('')}
+function newOpen(){NI=null;NTH='';NRL='';$('uT').value='';$('uI').innerHTML='';$('uQ').value='';$('uA').value='';$('uSp').value='';
+  var ths=(D.themes||[]).map(function(g){return [g.n,g.n]});chipRow('uTh',[['','선택 안 함']].concat(ths).concat([['__add','+ 새 테마']]),'');
+  chipRow('uRl',[['','선택 안 함'],['핵심','핵심'],['성장 베팅','성장 베팅'],['관찰용','관찰용']],'');uDiff();setTimeout(function(){$('uT').focus()},250)}
+$('uTh').onclick=function(e){var b=e.target.closest('button');if(!b)return;var v=b.dataset.v;
+  if(v==='__add'){var n=(prompt('새 테마 이름')||'').trim();if(!n)return;var ex=[].some.call(this.children,function(x){return x.dataset.v===n});
+    if(!ex){var nb=document.createElement('button');nb.type='button';nb.className='chip';nb.dataset.v=n;nb.textContent=n;this.insertBefore(nb,b)}v=n}
+  NTH=v;[].forEach.call(this.children,function(x){x.classList.toggle('on',x.dataset.v===v)})};
+$('uRl').onclick=function(e){var b=e.target.closest('button');if(!b)return;NRL=b.dataset.v;[].forEach.call(this.children,function(x){x.classList.toggle('on',x===b)})};
+$('uT').oninput=function(){var v=this.value.toUpperCase().replace(/\s+/g,'');if(v!==this.value)this.value=v;NI=null;uDiff();clearTimeout(ntm);
+  if(!v){$('uI').innerHTML='';return}$('uI').innerHTML='<span>확인 중…</span>';var my=++nseq;
+  ntm=setTimeout(function(){api('tk','&tk='+encodeURIComponent(v)).then(function(j){if(my!==nseq)return;
+    if(!j.ok){$('uI').innerHTML='<span class="warn">'+esc(j.err||'찾지 못했어요')+'</span>';return}NI=j;
+    var held=M.H.some(function(h){return h.t===j.tk});
+    $('uI').innerHTML=(j.logo?'<img src="'+esc(j.logo)+'" alt="">':'')+'<div><b>'+esc(j.name)+'</b>$'+f(j.p)+' <span class="'+(j.dp>=0?'up':'dn')+'">'+(j.dp>=0?'+':'')+f(j.dp)+'%</span>'
+      +(held?'<br><span class="warn">이미 보유 중이에요 · 위 목록에서 골라 주세요</span>':j.has?'<br><span>예전에 보유했던 종목이라 잔고 기록으로 이어져요</span>':'')+'</div>';
+    if(held)NI=null;uDiff()}).catch(function(e){if(my===nseq&&e.message!=='auth')$('uI').innerHTML='<span class="warn">확인하지 못했어요</span>'})},500)};
+function uDiff(){var D_=$('uD'),go_=$('uGo');
+  if(isNew()){var q=parseFloat($('uQ').value),a=parseFloat($('uA').value);$('uSpW').style.display='none';
+    if(!NI){D_.innerHTML='티커를 입력하면 회사를 확인해요';go_.disabled=true;return}
+    if(!(q>0)||!(a>0)){D_.innerHTML='수량과 평단을 입력해 주세요';go_.disabled=true;return}
+    go_.disabled=false;D_.innerHTML=NI.tk+' '+f(q,q%1?2:0)+'주 · 평단 $'+f(a)+' 새로 추가<small>지금가 대비 '+(NI.p/a-1>=0?'+':'')+f((NI.p/a-1)*100,1)+'% · 저장에 10~20초 걸려요</small>';return}
+  var h=cur(),q=parseFloat($('uQ').value),a=parseFloat($('uA').value),d=q-h.q;$('uSpW').style.display=(q<h.q)?'':'none';
   if(!(q>=0)){D_.innerHTML='수량을 확인해 주세요';go_.disabled=true;return}
   if(d===0){D_.innerHTML=Math.abs(a-h.avg)<0.005?'변동 없음':'평단만 바뀐 경우는 Claude에게 말해 주세요';go_.disabled=true;return}
   go_.disabled=false;
@@ -555,9 +617,10 @@ function uDiff(){var h=cur(),q=parseFloat($('uQ').value),a=parseFloat($('uA').va
   if(d>0){var p=(q*a-h.q*h.avg)/d;if(!(p>0)){D_.innerHTML='평단이 맞는지 확인해 주세요';go_.disabled=true;return}D_.innerHTML=h.t+' +'+f(d,d%1?2:0)+'주 매수 · 평균 체결가 약 $'+f(p)+'<small>잔고 변동에 자동으로 남아요</small>';return}
   D_.innerHTML=h.t+' −'+f(-d,d%1?2:0)+'주 매도<small>매도가를 비우면 종가로 기록돼요</small>'}
 $('uQ').oninput=uDiff;$('uA').oninput=uDiff;
-function balGo(){var b=$('uGo');b.disabled=true;b.textContent='저장 중…';
-  post({a:'bal',tk:US,q:$('uQ').value,avg:$('uA').value,sp:$('uSp').value}).then(function(j){b.textContent='업데이트';if(j.ok){cl();toast(j.msg||'저장했어요');reloadAll(true)}else{b.disabled=false;toast(j.err||'저장 실패')}})
-  .catch(function(e){b.textContent='업데이트';b.disabled=false;if(e.message!=='auth')toast('저장하지 못했어요')})}
+function balGo(){var b=$('uGo'),n=isNew(),lb=n?'추가하기':'업데이트';b.disabled=true;b.textContent=n?'추가하는 중… (최대 20초)':'저장 중…';
+  var o=n?{a:'add',tk:NI.tk,q:$('uQ').value,avg:$('uA').value,th:NTH,role:NRL}:{a:'bal',tk:US,q:$('uQ').value,avg:$('uA').value,sp:$('uSp').value};
+  post(o).then(function(j){b.textContent=lb;if(j.ok){cl();toast(j.msg||'저장했어요');reloadAll(true)}else{b.disabled=false;toast(j.err||'저장 실패')}})
+  .catch(function(e){b.textContent=lb;b.disabled=false;if(e.message!=='auth')toast('저장하지 못했어요')})}
 
 
 /* 명언 — 실제로 한 말로 확인된 것만 */
