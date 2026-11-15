@@ -477,14 +477,14 @@ function plan(){var P=D.plan;if(!P){$('sg').style.display='none';return}$('sg').
   x.style.display='none';
   if(n>0&&cur>=P.peak){b.textContent='QLD 정리 타이밍';t.innerHTML='나스닥이 전고점 <b>'+f(P.peak,0)+'</b>을 회복했어요'}
   else if(n===3){b.textContent='다 샀어요 · 회복 대기';t.innerHTML='나스닥 <b>'+f(P.peak,0)+'</b> 회복하면 QLD 정리 · 지금부터 '+pc((P.peak/cur-1)*100)}
-  else if(trig(n)){b.textContent=(n+1)+'차 매수 타이밍';t.innerHTML=(n===0&&P.hit1&&cur>L[0]?P.hit1+' 주봉이 50주선 아래로 마감했어요 · 아직 실행 전':'나스닥이 '+(n+1)+'차 기준 <b>'+f(L[n],0)+'</b> 아래예요');x.style.display='block';x.textContent='✓ '+(n+1)+'차 매수했어요 (QLD '+A[n]+'만)'}
-  else if(n===0){b.textContent='지금은 관망';t.innerHTML='나스닥 <b>'+f(L[0],0)+'</b> (50주선) 오면 QLD '+A[0]+'만 1차 · 지금부터 '+pc((L[0]/cur-1)*100)}
-  else{b.textContent=(n+1)+'차 대기 중';t.innerHTML='나스닥 <b>'+f(L[n],0)+'</b> 오면 QLD '+A[n]+'만 추가 · 지금부터 '+pc((L[n]/cur-1)*100)}
+  else if(trig(n)){b.textContent=(n+1)+'차 매수 타이밍';t.innerHTML=(n===0&&P.hit1&&cur>L[0]?P.hit1+' 주봉이 50주선 아래로 마감했어요 · 아직 실행 전':'나스닥이 '+(n+1)+'차 기준 <b>'+f(L[n],0)+'</b> 아래예요');x.style.display='block';x.textContent=(n+1)+'차 매수하기 · QLD 1/3 →'}
+  else if(n===0){b.textContent='지금은 관망';t.innerHTML='나스닥 <b>'+f(L[0],0)+'</b> (50주선) 오면 QLD 1/3 1차 매수 · 지금부터 '+pc((L[0]/cur-1)*100)}
+  else{b.textContent=(n+1)+'차 대기 중';t.innerHTML='나스닥 <b>'+f(L[n],0)+'</b> 오면 QLD 1/3 추가 · 지금부터 '+pc((L[n]/cur-1)*100)}
   var lo=L[2]*0.97,hi=P.peak*1.01;function px(v){return Math.max(0,Math.min(100,(v-lo)/(hi-lo)*100)).toFixed(1)+'%'}
   var el=$('lad');el.style.setProperty('--z',px(cur));
   var lv=[[L[2],'3차',DONE[2]],[L[1],'2차',DONE[1]],[L[0],'1차',DONE[0]],[P.peak,'고점',false]];
   el.innerHTML='<div class="ln"></div>'+lv.map(function(l){return '<div class="mk'+(l[2]?' hit':'')+'" style="left:'+px(l[0])+'"><i></i>'+l[1]+'</div>'}).join('')+'<div class="cur" style="left:'+px(cur)+'"></div>';
-  var ST=[['1차 · 50주선 '+f(L[0],0),'QLD '+A[0]+'만 + 하락 큰 개별주 물타기'],['2차 · 50주선 −5% '+f(L[1],0),'QLD '+A[1]+'만'],['3차 · 120주선 '+f(L[2],0),'QLD '+A[2]+'만'],['정리 · 전고점 '+f(P.peak,0)+' 회복','QLD 매도']];
+  var ST=[['1차 · 50주선 '+f(L[0],0),'QLD 1/3 + 하락 큰 개별주 물타기'],['2차 · 50주선 −5% '+f(L[1],0),'QLD 1/3'],['3차 · 120주선 '+f(L[2],0),'QLD 1/3'],['정리 · 전고점 '+f(P.peak,0)+' 회복','QLD 매도']];
   $('stp').innerHTML=ST.map(function(s,i){var d=i<3&&DONE[i],dist=[L[0],L[1],L[2],P.peak][i]/cur-1,em;
     if(i<3)em='<button class="ck'+(d?' on':'')+'" onclick="tgStep('+i+')">'+(d?'✓ 실행함':(trig(i)?'조건 충족':pc(dist*100)))+'</button>';else em='<em>'+pc(dist*100)+'</em>';
     return '<li'+(d?' class="done"':'')+'><span class="n">'+(d?'✓':(i<3?i+1:'✓'))+'</span><span class="tx"><b>'+s[0]+'</b><span>'+s[1]+'</span></span>'+em+'</li>'}).join('');
@@ -495,7 +495,10 @@ function plan(){var P=D.plan;if(!P){$('sg').style.display='none';return}$('sg').
   box.onmousemove=box.ontouchmove=box.ontouchstart=function(e){var r=box.getBoundingClientRect(),i=Math.round(Math.max(0,Math.min(1,((e.touches?e.touches[0].clientX:e.clientX)-r.left)/r.width))*(S.length-1)),d=S[i];
     xh.setAttribute('x1',X(i));xh.setAttribute('x2',X(i));xh.setAttribute('opacity',1);tip.style.opacity=1;tip.style.left=Math.max(18,Math.min(82,X(i)/W*100))+'%';tip.textContent=d[0]+' · 나스닥 '+f(d[1],0)+' · 50주 '+f(d[2],0)};
   box.onmouseleave=box.ontouchend=function(){tip.style.opacity=0;xh.setAttribute('opacity',0)}}
-function doStep(){var n=DONE[0]?(DONE[1]?2:1):0;setStep(n,true)}
+var PSTEP=null;
+function doStep(){var n=DONE[0]?(DONE[1]?2:1):0;PSTEP=n;op();if(!D)return;$('md').querySelector('h3').textContent=(n+1)+'차 매수 기록';
+  var b=[].filter.call($('uSel').children,function(x){return x.dataset.v==='QLD'})[0];
+  if(b){b.click();$('uQ').focus()}else{$('uSel').querySelector('.nw').click();$('uT').value='QLD';$('uT').oninput()}}
 function tgStep(i){setStep(i,!DONE[i])}
 function setStep(i,v){DONE[i]=v;if(!v)for(var k=i+1;k<3;k++)DONE[k]=false;plan();
   post({a:'plan',i:i,v:v}).then(function(j){if(j.ok){DONE=j.done;if(D.plan)D.plan.done=DONE;sset('lime_d',JSON.stringify(D));toast(v?(i+1)+'차 실행으로 기록했어요':'체크를 해제했어요')}else toast(j.err||'저장 실패')}).catch(function(e){if(e.message!=='auth')toast('저장하지 못했어요')})}
@@ -578,7 +581,7 @@ $('tb').onclick=function(e){var b=e.target.closest('button');if(b)go(b.dataset.p
 var US=null,NI=null,NTH='',NRL='',ntm=null,nseq=0;
 function op(){if(!D){toast('데이터를 불러온 뒤에 할 수 있어요');return}$('md').classList.add('on');
   $('uSel').innerHTML='<button type="button" class="nw" data-v="new">+ 추가</button>'+M.H.map(function(h,i){return '<button type="button" data-v="'+h.t+'"'+(i===0?' class="on"':'')+'>'+h.t+'</button>'}).join('');US=M.H[0].t;uMode();uFill()}
-function cl(){$('md').classList.remove('on')}
+function cl(){$('md').classList.remove('on');$('md').querySelector('h3').textContent='잔고 업데이트';PSTEP=null}
 $('uSel').onclick=function(e){var b=e.target.closest('button');if(!b)return;
   [].forEach.call(this.children,function(x){x.classList.toggle('on',x===b)});US=b.dataset.v==='new'?'__new':b.dataset.v;uMode();
   if(US==='__new')newOpen();else uFill()};
@@ -619,7 +622,7 @@ function uDiff(){var D_=$('uD'),go_=$('uGo');
 $('uQ').oninput=uDiff;$('uA').oninput=uDiff;
 function balGo(){var b=$('uGo'),n=isNew(),lb=n?'추가하기':'업데이트';b.disabled=true;b.textContent=n?'추가하는 중… (최대 20초)':'저장 중…';
   var o=n?{a:'add',tk:NI.tk,q:$('uQ').value,avg:$('uA').value,th:NTH,role:NRL}:{a:'bal',tk:US,q:$('uQ').value,avg:$('uA').value,sp:$('uSp').value};
-  post(o).then(function(j){b.textContent=lb;if(j.ok){cl();toast(j.msg||'저장했어요');reloadAll(true)}else{b.disabled=false;toast(j.err||'저장 실패')}})
+  post(o).then(function(j){b.textContent=lb;if(j.ok){var ps=PSTEP,tk=o.tk;cl();toast(j.msg||'저장했어요');if(ps!=null&&tk==='QLD')setStep(ps,true);reloadAll(true)}else{b.disabled=false;toast(j.err||'저장 실패')}})
   .catch(function(e){b.textContent=lb;b.disabled=false;if(e.message!=='auth')toast('저장하지 못했어요')})}
 
 
