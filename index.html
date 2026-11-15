@@ -241,6 +241,18 @@ button{font-family:inherit;color:inherit}
 .ptr{height:0;overflow:hidden;display:flex;align-items:center;justify-content:center;color:var(--mu);transition:height .25s ease}
 .ptr.rdy{color:var(--key-tx)}
 .ptr.spin svg{animation:spn .8s linear infinite}@keyframes spn{to{transform:rotate(360deg)}}
+.rcard{display:flex;align-items:center;gap:12px;width:calc(100% - 40px);margin:4px 20px 8px;border:0;background:var(--key-soft);border-radius:16px;padding:14px 16px;text-align:left;cursor:pointer;font-family:inherit;color:var(--tx)}
+.rcard>span{font-size:22px}.rcard div{flex:1}.rcard b{display:block;font-size:15px}.rcard small{font-size:12px;color:var(--tx2)}.rcard em{font-style:normal;color:var(--mu);font-size:20px}
+.md.full .sheet{max-height:92vh;overflow-y:auto}
+.rh{display:flex;justify-content:space-between;align-items:center}.rh h3{margin:0}
+.rs{background:var(--card);border-radius:16px;padding:14px 16px;margin:10px 0}
+.rk{font-size:13px;color:var(--mu);font-weight:700;margin:0 0 8px}
+.rs h4{font-size:19px;margin:0 0 12px;letter-spacing:-.3px}.rs h4 em{font-style:normal}.rs h4 .up{color:var(--up)}.rs h4 .dn{color:var(--down)}
+.rb{display:flex;align-items:center;gap:10px;margin:6px 0}.rb span{width:64px;font-size:13px;color:var(--tx2)}.rb b{width:60px;text-align:right;font-size:14px}
+.rbt{flex:1;height:10px;background:var(--bg);border-radius:5px;overflow:hidden}.rbt i{display:block;height:100%;border-radius:5px;background:#C9CED6}.rbt i.me.p{background:var(--up)}.rbt i.me.m{background:var(--down)}
+.rn{font-size:12px;color:var(--mu);margin:8px 0 0}
+.rl{display:flex;justify-content:space-between;padding:7px 0;font-size:14px;border-bottom:1px solid var(--ln)}.rl:last-child{border-bottom:0}.rl small{font-size:12px;margin-left:4px}
+.rp{margin:0;font-size:15px;font-weight:600}
 </style>
 </head>
 <body>
@@ -256,6 +268,7 @@ button{font-family:inherit;color:inherit}
 
     <!-- HOME -->
     <section class="pg on" id="p_home">
+      <button class="rcard" id="rcard" style="display:none" onclick="openRpt(this.dataset.ym)"><span>📊</span><div><b id="rcT"></b><small>지난달 수익률 · QQQ 비교 · 다음 달 일정</small></div><em>›</em></button>
       <button class="qt" id="qt" onclick="nextQuote()"><span id="qtT"></span><small id="qtA"></small></button>
       <div class="hero">
         <div class="l">총 평가금액</div>
@@ -408,10 +421,21 @@ button{font-family:inherit;color:inherit}
     </div>
   </div>
 
+  <div class="md full" id="md5" onclick="if(event.target===this)this.classList.remove('on')">
+    <div class="sheet">
+      <div class="grab"></div>
+      <div class="rh"><h3>월간 리포트</h3><button class="ic" onclick="$('md5').classList.remove('on')" aria-label="닫기">✕</button></div>
+      <div class="chips" id="rch"></div>
+      <div id="rpt"></div>
+    </div>
+  </div>
+
   <div class="md" id="md2" onclick="if(event.target===this)this.classList.remove('on')">
     <div class="sheet">
       <div class="grab"></div>
       <h3>설정</h3>
+      <button class="srow" onclick="$('md2').classList.remove('on');openRpt()"><span>📊 월간 리포트</span><em>›</em></button>
+      <button class="srow" id="pushRow" onclick="pushOn()"><span id="pushT">🔔 알림 켜기</span><em>›</em></button>
       <button class="srow" onclick="startChg()"><span>🔒 비밀번호 변경</span><em>›</em></button>
       <button class="srow" onclick="if(confirm('로그아웃할까요?')){post({a:'logout'}).catch(function(){});$('md2').classList.remove('on');logout()}"><span>🚪 로그아웃</span><em>›</em></button>
       <p class="hint">라임 · 데이터는 구글 시트에서 불러와요</p>
@@ -479,7 +503,7 @@ function pinIn(el,silent){el.value=el.value.replace(/\D/g,'').slice(0,6);var n=e
   [].forEach.call(document.querySelectorAll('#pin i'),function(d,i){d.classList.toggle('on',i<n)});
   if(!silent&&n===6&&!BUSY){var v=el.value;setTimeout(function(){pinDone(v)},150)}}
 function shake(m){var p=$('pin');p.classList.remove('sh');void p.offsetWidth;p.classList.add('sh');$('obM').textContent=m||'';$('obk').value='';pinIn($('obk'),true)}
-function openSet(){$('md2').classList.add('on')}
+function openSet(){pushState();$('md2').classList.add('on')}
 function startChg(){$('md2').classList.remove('on');MODE='chg';CH=[];var o=$('ob');o.classList.add('chg');o.classList.remove('off');$('obP').innerHTML='<b>현재 비밀번호</b>를 입력해 주세요';$('obS').textContent='🔒 비밀번호 변경';$('obM').textContent='';$('obk').value='';pinIn($('obk'),true);setTimeout(function(){$('obk').focus()},200)}
 function closeChg(){MODE='login';CH=[];var o=$('ob');o.classList.remove('chg');o.classList.add('off');$('obk').blur()}
 function chgDone(v){var k=$('obk');
@@ -706,6 +730,43 @@ function go(p){[].forEach.call(document.querySelectorAll('.pg'),function(x){x.cl
   $('ttl').textContent=TT[p];$('sc').scrollTop=0;sset('lime_tab',p);if(p==='nws'&&TOK)loadNews();if(p==='cal'&&TOK)loadCal();if(p==='stk'&&SEG==='watch'&&TOK)loadWatch()}
 $('tb').onclick=function(e){var b=e.target.closest('button');if(b)go(b.dataset.p)};
 
+/* 월간 리포트 */
+var RL=null,RD={};
+function openRpt(ym){$('md5').classList.add('on');$('rpt').innerHTML='<div class="sk"><i style="width:40%"></i><i style="width:90%;height:60px"></i><i style="width:70%;height:14px"></i></div><p class="empty">처음 한 번은 리포트를 만드느라 20초쯤 걸려요</p>';
+  if(ym&&RD[ym])return showRpt(ym);
+  api('rpt',ym?'&ym='+ym:'').then(function(j){if(!j.ok||!j.d){$('rpt').innerHTML='<p class="empty">아직 만들 수 있는 리포트가 없어요<br>자산 기록이 한 달 이상 쌓이면 나와요</p>';return}RL=j.list;RD[j.ym]=j.d;showRpt(j.ym)})
+  .catch(function(e){if(e.message!=='auth')$('rpt').innerHTML='<p class="empty">리포트를 불러오지 못했어요</p>'})}
+function showRpt(ym){var r=RD[ym];$('rch').innerHTML=(RL||[ym]).map(function(m){return '<button class="chip'+(m===ym?' on':'')+'" data-ym="'+m+'">'+(+m.slice(0,4)===new Date().getFullYear()?'':m.slice(2,4)+'년 ')+(+m.slice(5))+'월</button>'}).join('');
+  var mx=Math.max(Math.abs(r.me),Math.abs(r.qqq||0),Math.abs(r.spy||0),1);
+  function bar(n,v,me){return '<div class="rb"><span>'+n+'</span><div class="rbt"><i class="'+(v>=0?'p':'m')+(me?' me':'')+'" style="width:'+(v==null?0:Math.abs(v)/mx*100).toFixed(1)+'%"></i></div><b class="'+c(v)+'">'+(v==null?'-':pc(v,1))+'</b></div>'}
+  var vs=r.qqq!=null?r.me-r.qqq:null,h='';
+  h+='<div class="rs"><p class="rk">'+r.ym.slice(0,4)+'년 '+(+r.ym.slice(5))+'월 · '+r.from.slice(5).replace('-','/')+'~'+r.to.slice(5).replace('-','/')+'</p><h4>'+(vs==null?'수익률 '+pc(r.me,1):vs>=0?'QQQ보다 <em class="up">'+f(vs,1)+'%p</em> 앞섰어요':'QQQ보다 <em class="dn">'+f(-vs,1)+'%p</em> 뒤졌어요')+'</h4>'+bar('나',r.me,1)+bar('QQQ',r.qqq)+bar('S&amp;P 500',r.spy)+'<p class="rn">입금·추가 매수 금액은 빼고 계산한 수익률</p></div>';
+  h+='<div class="rs"><p class="rk">자산</p><div class="kv"><div><small>월초</small><b>$'+f(r.v0,0)+'</b></div><div><small>월말</small><b>$'+f(r.v1,0)+'</b></div><div><small>순매수</small><b>'+(r.netIn>=0?'+':'−')+'$'+f(Math.abs(r.netIn),0)+'</b></div></div>'+(r.totK?'<p class="rn">연금 포함 총자산 약 '+won(r.totK)+' · 환율 '+f(r.fx,0)+'원</p>':'')+'</div>';
+  if(r.top.length)h+='<div class="rs"><p class="rk">이번 달 종목 성적</p>'+r.top.map(function(x){return '<div class="rl"><span>🔺 '+x[0]+'</span><b class="'+c(x[1])+'">'+pc(x[1],1)+'</b></div>'}).join('')+r.bot.map(function(x){return '<div class="rl"><span>🔻 '+x[0]+'</span><b class="'+c(x[1])+'">'+pc(x[1],1)+'</b></div>'}).join('')+'</div>';
+  if(r.th&&r.th.length)h+='<div class="rs"><p class="rk">테마 비중</p>'+r.th.map(function(x){return '<div class="rl"><span>'+esc(x[0])+'</span><b>'+f(x[1],1)+'%'+(x[2]!=null&&x[2]!==0?' <small class="'+c(x[2])+'">'+(x[2]>0?'+':'')+f(x[2],1)+'%p</small>':'')+'</b></div>'}).join('')+'</div>';
+  h+='<div class="rs"><p class="rk">매매 '+r.nTr+'건'+(r.real?' · 실현 손익 <span class="'+c(r.real)+'">'+(r.real>=0?'+':'−')+'$'+f(Math.abs(r.real),0)+'</span>':'')+'</p>'+(r.tr.length?r.tr.map(function(x){return '<div class="rl"><span>'+x[0]+' · '+x[1]+'</span><b>'+(x[2]==='매도'?'−':'+')+f(x[3],x[3]%1?2:0)+'주 · $'+f(x[4])+'</b></div>'}).join(''):'<p class="rn">이번 달은 매매가 없었어요</p>')+'</div>';
+  if(r.ev.length)h+='<div class="rs"><p class="rk">다음 달 일정</p>'+r.ev.map(function(x){return '<div class="rl"><span>'+x[0]+'</span><b>'+esc(x[1])+'</b></div>'}).join('')+'</div>';
+  if(r.plan)h+='<div class="rs"><p class="rk">조정장 매수 플랜</p><p class="rp">'+esc(r.plan)+'</p></div>';
+  h+='<p class="foot" style="padding:6px 0 0">'+r.made+' 생성 · 참고용이며 투자 권유가 아니에요</p>';$('rpt').innerHTML=h}
+$('rch').onclick=function(e){var b=e.target.closest('.chip');if(!b)return;openRpt(b.dataset.ym)};
+function rptCard(){var d=new Date();if(d.getDate()>7||!TOK)return;var p=new Date(d.getFullYear(),d.getMonth()-1,1),ym=p.getFullYear()+'-'+('0'+(p.getMonth()+1)).slice(-2);
+  if(sget('lime_rseen')===ym)return;var b=$('rcard');b.dataset.ym=ym;$('rcT').textContent=(p.getMonth()+1)+'월 리포트가 나왔어요';b.style.display='';b.addEventListener('click',function(){sset('lime_rseen',ym);b.style.display='none'})}
+
+/* 알림 */
+var VAPID='BBjmkKQeQY4hA-_Axdqf7iqcNpIDxBZwH-YCYuG6aNWrnAUYUgS2NrtQWvYBDTO5MnjTBBXYmMs4j38KtG4i738';
+function b64u(s){var p='='.repeat((4-s.length%4)%4),b=atob((s+p).replace(/-/g,'+').replace(/_/g,'/')),a=new Uint8Array(b.length);for(var i=0;i<b.length;i++)a[i]=b.charCodeAt(i);return a}
+function pushState(){var t=$('pushT');if(!('serviceWorker' in navigator)||!('PushManager' in window)){t.textContent='🔔 알림 (홈 화면 앱에서만 가능)';return}
+  if(typeof Notification!=='undefined'&&Notification.permission==='granted'&&sget('lime_push')==='1')t.textContent='🔔 알림 켜짐 · 테스트 보내기';else t.textContent='🔔 알림 켜기'}
+function pushOn(){if(!('serviceWorker' in navigator)||!('PushManager' in window)){toast('아이폰 홈 화면에 추가한 라임 앱에서 켤 수 있어요');return}
+  if(Notification.permission==='granted'&&sget('lime_push')==='1'){api('ptest').then(function(j){toast(Array.isArray(j.r)?'테스트 알림을 보냈어요':'알림 서버 설정이 아직 안 됐어요')}).catch(function(){});return}
+  Notification.requestPermission().then(function(p){if(p!=='granted'){toast('알림이 허용되지 않았어요 · 설정 앱에서 바꿀 수 있어요');throw new Error('deny')}
+    return navigator.serviceWorker.register('sw.js').then(function(){return navigator.serviceWorker.ready})})
+  .then(function(reg){return reg.pushManager.getSubscription().then(function(s){return s||reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64u(VAPID)})})})
+  .then(function(sub){return post({a:'psub',sub:sub.toJSON()})})
+  .then(function(j){if(j.ok){sset('lime_push','1');pushState();toast('알림을 켰어요 🔔 한 번 더 누르면 테스트 알림이 와요')}else toast(j.err||'알림을 켜지 못했어요')})
+  .catch(function(e){if(e.message!=='deny'&&e.message!=='auth')toast('알림을 켜지 못했어요')})}
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(function(){});
+
 /* 일정 */
 var CAL=null,CK='all',WD=['일','월','화','수','목','금','토'];
 function loadCal(force){if(CAL&&!force)return renderCal();$('cal').innerHTML=[1,2,3].map(function(){return '<div class="sk"><i style="width:30%"></i><i style="width:90%;height:14px"></i></div>'}).join('');
@@ -843,11 +904,11 @@ function splash(){var t=new Date().toDateString();if(sget('lime_spl')===t)return
 function hideSplash(){var s=$('spl');if(!s.classList.contains('on'))return;s.classList.add('out');setTimeout(function(){s.classList.remove('on','out')},350)}
 
 /* 시작 */
-(function(){TOK=sget('lime_t');var t=sget('lime_tab');if(t&&TT[t])go(t);
+(function(){TOK=sget('lime_t');var Q={};location.search.slice(1).split('&').forEach(function(x){var k=x.split('=');if(k[0])Q[k[0]]=decodeURIComponent(k[1]||'')});var t=Q.tab||sget('lime_tab');if(t&&TT[t])go(t);
   if(!TOK){showOb();return}$('ob').classList.add('off');
   var c=sget('lime_d');if(c){try{D=JSON.parse(c);DONE=(D.plan&&D.plan.done)||DONE;render();setStt((D.asOf||'')+' 기준',true)}catch(e){}}
   if(!splash())showQuote(pickQuote());
-  reloadAll(false);startLive()})();
+  reloadAll(false);startLive();rptCard();if(Q.r){history.replaceState(null,'',location.pathname);openRpt(Q.r)}})();
 </script>
 </body>
 </html>
