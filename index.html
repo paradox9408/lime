@@ -253,9 +253,9 @@ button{font-family:inherit;color:inherit}
 .rn{font-size:12px;color:var(--mu);margin:8px 0 0}
 .rl{display:flex;justify-content:space-between;padding:7px 0;font-size:14px;border-bottom:1px solid var(--ln)}.rl:last-child{border-bottom:0}.rl small{font-size:12px;margin-left:4px}
 .rp{margin:0;font-size:15px;font-weight:600}
-.pg.inR{animation:inR .22s ease}.pg.inL{animation:inL .22s ease}
-@keyframes inR{from{opacity:.4;transform:translateX(36px)}to{opacity:1;transform:none}}
-@keyframes inL{from{opacity:.4;transform:translateX(-36px)}to{opacity:1;transform:none}}
+.pg.inR{animation:inR .22s cubic-bezier(.2,.8,.2,1)}.pg.inL{animation:inL .22s cubic-bezier(.2,.8,.2,1)}
+@keyframes inR{from{opacity:0;transform:translateX(48px)}to{opacity:1;transform:none}}
+@keyframes inL{from{opacity:0;transform:translateX(-48px)}to{opacity:1;transform:none}}
 .ptc{display:block;width:100%;margin-top:12px;border:0;background:var(--card);border-radius:16px;padding:14px 16px;text-align:left;cursor:pointer;font-family:inherit;color:var(--tx)}
 .ptch{display:flex;justify-content:space-between;align-items:baseline}.ptch b{font-size:15px}.ptch span{font-size:12px;color:var(--up);font-weight:700}
 .ptb{position:relative;display:flex;height:10px;background:var(--bg);border-radius:5px;overflow:hidden;margin:10px 0 8px}.ptb i{display:block;height:100%;background:var(--key)}.ptb i.irp{background:#12A04A}
@@ -570,22 +570,19 @@ function quick(){if(!TOK)return Promise.resolve();if(SEG==='watch'&&$('p_stk').c
     if(dy*0.5>=TH*0.8){busy=true;pt.style.height='52px';pt.classList.add('spin');quick().then(function(){busy=false;pt.classList.remove('spin','rdy');pt.style.height='0'})}else{pt.style.height='0';pt.classList.remove('rdy')}})})();
 (function(){var sc=$('sc'),ORD=['home','stk','hlt','cal','nws'],st=null,pend=null;
   function flush(){if(pend){clearTimeout(pend.t);var f=pend.fn;pend=null;f()}}
-  function reset(s){if(!s)return;[s.cur,s.nb].forEach(function(p){if(p){p.style.transition='';p.style.transform='';p.style.position='';p.style.top='';p.style.left='';p.style.right='';p.style.display='';p.style.opacity=''}});window._hsw=false}
+  function clr(p){p.style.transition='';p.style.transform='';p.style.opacity=''}
   sc.addEventListener('touchstart',function(e){flush();var t=e.target;if(document.querySelector('.md.on')||t.closest('.sw,.spk,.sgc,.mcw,.mc,.chips,.tk,.seg,.spm,.lad')){st=null;return}
-    var cur=document.querySelector('.pg.on');st={x:e.touches[0].clientX,y:e.touches[0].clientY,t:Date.now(),ax:null,cur:cur,i:ORD.indexOf(cur.id.slice(2)),nb:null,dir:0,dx:0,W:sc.clientWidth}},{passive:true});
+    var cur=document.querySelector('.pg.on');st={x:e.touches[0].clientX,y:e.touches[0].clientY,t:Date.now(),ax:null,cur:cur,i:ORD.indexOf(cur.id.slice(2)),dx:0,W:sc.clientWidth}},{passive:true});
   sc.addEventListener('touchmove',function(e){if(!st)return;var dx=e.touches[0].clientX-st.x,dy=e.touches[0].clientY-st.y;
-    if(st.ax===null){if(Math.abs(dx)<8&&Math.abs(dy)<8)return;st.ax=Math.abs(dx)>Math.abs(dy)*1.2?'x':'y';if(st.ax==='y'){st=null;return}window._hsw=true}
-    e.preventDefault();var dir=dx<0?1:-1,j=st.i+dir;
-    if(dir!==st.dir){if(st.nb){st.nb.style.display='';st.nb.style.position='';st.nb.style.transform=''}st.dir=dir;st.nb=(j>=0&&j<ORD.length)?$('p_'+ORD[j]):null;
-      if(st.nb){var nb=st.nb;nb.style.display='block';nb.style.position='absolute';nb.style.left='0';nb.style.right='0';nb.style.top=(sc.scrollTop+st.cur.offsetTop)+'px'}}
-    var lim=st.nb?dx:dx*0.25;st.dx=lim;st.cur.style.transform='translateX('+lim+'px)';if(st.nb)st.nb.style.transform='translateX('+(lim+dir*st.W)+'px)'},{passive:false});
+    if(st.ax===null){if(Math.abs(dx)>Math.abs(dy)&&Math.abs(dx)>3)e.preventDefault();if(Math.abs(dx)<10&&Math.abs(dy)<10)return;st.ax=Math.abs(dx)>Math.abs(dy)*1.2?'x':'y';if(st.ax==='y'){st=null;return}window._hsw=true}
+    e.preventDefault();var j=st.i+(dx<0?1:-1),edge=j<0||j>=ORD.length,v=edge?dx*0.2:dx*0.85;st.dx=dx;
+    st.cur.style.transition='none';st.cur.style.transform='translateX('+v+'px)';st.cur.style.opacity=String(1-Math.min(Math.abs(v)/st.W,1)*0.7)},{passive:false});
   sc.addEventListener('touchend',function(){if(!st||st.ax!=='x'){st=null;window._hsw=false;return}
-    var s=st,v=Math.abs(s.dx)/Math.max(1,Date.now()-s.t),ok=s.nb&&(Math.abs(s.dx)>s.W*0.28||(v>0.45&&Math.abs(s.dx)>40)),E='transform .24s cubic-bezier(.2,.8,.2,1)';
-    s.cur.style.transition=E;if(s.nb)s.nb.style.transition=E;
-    if(ok){s.cur.style.transform='translateX('+(-s.dir*s.W)+'px)';s.nb.style.transform='translateX(0)';
-      var fin=function(){var to=ORD[s.i+s.dir];reset(s);var np=$('p_'+to);np.style.animation='none';go(to);setTimeout(function(){np.style.animation=''},60)};pend={fn:fin,t:setTimeout(function(){pend=null;fin()},240)}}
-    else{s.cur.style.transform='translateX(0)';if(s.nb)s.nb.style.transform='translateX('+(s.dir*s.W)+'px)';var fb=function(){reset(s)};pend={fn:fb,t:setTimeout(function(){pend=null;fb()},240)}}
-    st=null},{passive:true})})();
+    var s=st;st=null;window._hsw=false;var dir=s.dx<0?1:-1,j=s.i+dir,v=Math.abs(s.dx)/Math.max(1,Date.now()-s.t),ok=j>=0&&j<ORD.length&&(Math.abs(s.dx)>s.W*0.25||(v>0.4&&Math.abs(s.dx)>40));
+    if(ok){s.cur.style.transition='transform .14s ease-in,opacity .14s ease-in';s.cur.style.transform='translateX('+(-dir*s.W*0.35)+'px)';s.cur.style.opacity='0';
+      var fin=function(){clr(s.cur);go(ORD[j]);var np=$('p_'+ORD[j]);np.classList.remove('inL','inR');void np.offsetWidth;np.classList.add(dir>0?'inR':'inL')};
+      pend={fn:fin,t:setTimeout(function(){pend=null;fin()},140)}}
+    else{s.cur.style.transition='transform .2s ease,opacity .2s ease';s.cur.style.transform='translateX(0)';s.cur.style.opacity='1';var fb=function(){clr(s.cur)};pend={fn:fb,t:setTimeout(function(){pend=null;fb()},200)}}},{passive:true})})();
 function live(){if(!TOK||!D)return Promise.resolve();return api('live').then(function(j){if(j.ok){LV=j.d;render();
     if(LV.n)setStt('실시간 '+LV.at+' · USD/KRW '+f(LV.fx||D.fx,1));else setStt((D.asOf||'')+' 기준 · 시세 지연',true)}})
   .catch(function(e){if(e.message!=='auth')setStt((D.asOf||'')+' 기준 · 지연',true)})}
