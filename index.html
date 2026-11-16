@@ -31,7 +31,7 @@ html,body{margin:0;background:var(--bg);color:var(--tx);font-family:Pretendard,-
 
 button{font-family:inherit;color:inherit}
 .phone{position:fixed;top:0;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:var(--bg);overflow:hidden}
-.scroll{position:absolute;inset:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:calc(150px + env(safe-area-inset-bottom));scrollbar-width:none}
+.scroll{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding-bottom:calc(150px + env(safe-area-inset-bottom));scrollbar-width:none}
 .scroll::-webkit-scrollbar{display:none}
 .top{position:sticky;top:0;z-index:5;background:var(--bg);display:flex;justify-content:space-between;align-items:center;padding:calc(14px + env(safe-area-inset-top)) 20px 10px}
 .top h1{font-size:22px;font-weight:800;margin:0;letter-spacing:-.4px}
@@ -262,6 +262,9 @@ button{font-family:inherit;color:inherit}
 .ptb em{position:absolute;top:0;bottom:0;width:2px;background:var(--ln)}
 .ptl{display:flex;justify-content:space-between;font-size:13px;color:var(--tx2)}.ptl b{color:var(--tx)}
 .ptn{margin:8px 0 0;font-size:12px;color:var(--key-tx);font-weight:600}
+.eye{position:absolute;top:16px;right:16px;z-index:2;width:36px;height:36px;border-radius:50%;border:0;background:rgba(255,255,255,.35);color:var(--key-ink);display:grid;place-items:center;cursor:pointer}
+.priv #hV,.priv #hK,.priv .amt,.priv #accTot b,.priv .av b,.priv #spM,.priv .spk .tip,.priv .acct span,.priv #allList .kv b,.priv #rpt .kv b,.priv .ptl{filter:blur(7px);-webkit-user-select:none;user-select:none}
+.priv .amt{display:inline-block}
 </style>
 </head>
 <body>
@@ -280,6 +283,7 @@ button{font-family:inherit;color:inherit}
       <button class="rcard" id="rcard" style="display:none" onclick="openRpt(this.dataset.ym)"><span>📊</span><div><b id="rcT"></b><small>지난달 수익률 · QQQ 비교 · 다음 달 일정</small></div><em>›</em></button>
       <button class="qt" id="qt" onclick="nextQuote()"><span id="qtT"></span><small id="qtA"></small></button>
       <div class="hero">
+        <button class="eye" id="eye" onclick="togPriv(event)" aria-label="금액 가리기"></button>
         <div class="l">총 평가금액</div>
         <div class="v" id="hV">$0.00</div>
         <div class="k" id="hK">-</div>
@@ -556,16 +560,27 @@ function reloadAll(fresh){if(!TOK)return;if(fresh){if($('p_cal').classList.conta
 function quick(){if(!TOK)return Promise.resolve();if(SEG==='watch'&&$('p_stk').classList.contains('on'))loadWatch();if($('p_cal').classList.contains('on')&&!CAL)loadCal();reloadAll(false);return new Promise(function(r){var t=setInterval(function(){if(!$('rf').classList.contains('spin')){clearInterval(t);r()}},150)})}
 (function(){var sc=$('sc'),pt=$('ptr'),y0=null,dy=0,busy=false,TH=70;
   sc.addEventListener('touchstart',function(e){if(busy||sc.scrollTop>0||document.querySelector('.md.on')){y0=null;return}y0=e.touches[0].clientY;dy=0},{passive:true});
-  sc.addEventListener('touchmove',function(e){if(y0===null)return;dy=e.touches[0].clientY-y0;if(dy<=0||sc.scrollTop>0){dy=0;pt.style.height='0';return}
+  sc.addEventListener('touchmove',function(e){if(y0===null)return;if(window._hsw){y0=null;pt.style.height='0';return}dy=e.touches[0].clientY-y0;if(dy<=0||sc.scrollTop>0){dy=0;pt.style.height='0';return}
     e.preventDefault();var h=Math.min(110,dy*0.5);pt.style.transition='none';pt.style.height=h+'px';pt.classList.toggle('rdy',h>=TH*0.8);pt.querySelector('svg').style.transform='rotate('+(h*3)+'deg)'},{passive:false});
   sc.addEventListener('touchend',function(){if(y0===null)return;y0=null;pt.style.transition='';
     if(dy*0.5>=TH*0.8){busy=true;pt.style.height='52px';pt.classList.add('spin');quick().then(function(){busy=false;pt.classList.remove('spin','rdy');pt.style.height='0'})}else{pt.style.height='0';pt.classList.remove('rdy')}})})();
-(function(){var sc=$('sc'),ORD=['home','stk','hlt','cal','nws'],x0=null,y0=0,t0=0;
-  sc.addEventListener('touchstart',function(e){var t=e.target;if(document.querySelector('.md.on')||t.closest('.sw,.spk,.sgc,.mcw,.mc,.chips,.tk,.seg,.spm,.lad')){x0=null;return}x0=e.touches[0].clientX;y0=e.touches[0].clientY;t0=Date.now()},{passive:true});
-  sc.addEventListener('touchend',function(e){if(x0===null)return;var dx=e.changedTouches[0].clientX-x0,dy=e.changedTouches[0].clientY-y0;x0=null;
-    if(Date.now()-t0>700||Math.abs(dx)<70||Math.abs(dx)<Math.abs(dy)*2)return;
-    var cur=(document.querySelector('.pg.on')||{id:'p_home'}).id.slice(2),i=ORD.indexOf(cur),j=i+(dx<0?1:-1);if(j<0||j>=ORD.length)return;
-    go(ORD[j]);var pg=$('p_'+ORD[j]);pg.classList.remove('inL','inR');void pg.offsetWidth;pg.classList.add(dx<0?'inR':'inL')},{passive:true})})();
+(function(){var sc=$('sc'),ORD=['home','stk','hlt','cal','nws'],st=null;
+  function reset(s){if(!s)return;[s.cur,s.nb].forEach(function(p){if(p){p.style.transition='';p.style.transform='';p.style.position='';p.style.top='';p.style.left='';p.style.right='';p.style.display='';p.style.opacity=''}});window._hsw=false}
+  sc.addEventListener('touchstart',function(e){var t=e.target;if(document.querySelector('.md.on')||t.closest('.sw,.spk,.sgc,.mcw,.mc,.chips,.tk,.seg,.spm,.lad')){st=null;return}
+    var cur=document.querySelector('.pg.on');st={x:e.touches[0].clientX,y:e.touches[0].clientY,t:Date.now(),ax:null,cur:cur,i:ORD.indexOf(cur.id.slice(2)),nb:null,dir:0,dx:0,W:sc.clientWidth}},{passive:true});
+  sc.addEventListener('touchmove',function(e){if(!st)return;var dx=e.touches[0].clientX-st.x,dy=e.touches[0].clientY-st.y;
+    if(st.ax===null){if(Math.abs(dx)<8&&Math.abs(dy)<8)return;st.ax=Math.abs(dx)>Math.abs(dy)*1.2?'x':'y';if(st.ax==='y'){st=null;return}window._hsw=true}
+    e.preventDefault();var dir=dx<0?1:-1,j=st.i+dir;
+    if(dir!==st.dir){if(st.nb){st.nb.style.display='';st.nb.style.position='';st.nb.style.transform=''}st.dir=dir;st.nb=(j>=0&&j<ORD.length)?$('p_'+ORD[j]):null;
+      if(st.nb){var nb=st.nb;nb.style.display='block';nb.style.position='absolute';nb.style.left='0';nb.style.right='0';nb.style.top=(sc.scrollTop+st.cur.offsetTop)+'px'}}
+    var lim=st.nb?dx:dx*0.25;st.dx=lim;st.cur.style.transform='translateX('+lim+'px)';if(st.nb)st.nb.style.transform='translateX('+(lim+dir*st.W)+'px)'},{passive:false});
+  sc.addEventListener('touchend',function(){if(!st||st.ax!=='x'){st=null;window._hsw=false;return}
+    var s=st,v=Math.abs(s.dx)/Math.max(1,Date.now()-s.t),ok=s.nb&&(Math.abs(s.dx)>s.W*0.28||(v>0.45&&Math.abs(s.dx)>40)),E='transform .24s cubic-bezier(.2,.8,.2,1)';
+    s.cur.style.transition=E;if(s.nb)s.nb.style.transition=E;
+    if(ok){s.cur.style.transform='translateX('+(-s.dir*s.W)+'px)';s.nb.style.transform='translateX(0)';
+      setTimeout(function(){var to=ORD[s.i+s.dir];reset(s);var np=$('p_'+to);np.style.animation='none';go(to);setTimeout(function(){np.style.animation=''},60)},240)}
+    else{s.cur.style.transform='translateX(0)';if(s.nb)s.nb.style.transform='translateX('+(s.dir*s.W)+'px)';setTimeout(function(){reset(s)},240)}
+    st=null},{passive:true})})();
 function live(){if(!TOK||!D)return Promise.resolve();return api('live').then(function(j){if(j.ok){LV=j.d;render();
     if(LV.n)setStt('실시간 '+LV.at+' · USD/KRW '+f(LV.fx||D.fx,1));else setStt((D.asOf||'')+' 기준 · 시세 지연',true)}})
   .catch(function(e){if(e.message!=='auth')setStt((D.asOf||'')+' 기준 · 지연',true)})}
@@ -586,9 +601,9 @@ var M=null;
 function render(){if(!D)return;M=model();renderHome();renderStocks();renderHealth();if(NEWS)renderNews()}
 function renderHome(){var m=M;
   $('hV').textContent='$'+f(m.tv);$('hK').textContent='약 '+Math.round(m.tv*m.fx/1e4).toLocaleString()+'만 원';
-  var hp=$('hP');hp.textContent=(m.pl>=0?'▲':'▼')+' $'+f(Math.abs(m.pl))+' · '+pc(m.ret*100);hp.className='pill '+(m.pl>=0?'pu':'pd');
+  var hp=$('hP');hp.innerHTML=(m.pl>=0?'▲':'▼')+' <span class="amt">$'+f(Math.abs(m.pl))+'</span> · '+pc(m.ret*100);hp.className='pill '+(m.pl>=0?'pu':'pd');
   var ms=LV&&LV.ms,sl=!ms?'':ms.s==='regular'?'정규장 · 실시간':ms.s==='pre-market'?'프리장 · 전일 종가 기준':ms.s==='post-market'?'애프터 · 정규장 종가 기준':ms.hol?'휴장 · '+ms.hol:'장 마감 · 종가 기준';
-  $('hD').innerHTML=(ms&&ms.s==='regular'?'오늘':'지난 거래일 대비')+' <b class="'+(m.day>=0?'tu':'td')+'">'+ar(m.day)+' $'+f(Math.abs(m.day))+' ('+pc(m.dayP)+')</b>'+(sl?'<span class="ses'+(ms.s==='regular'?' on':'')+'">'+sl+'</span>':'');
+  $('hD').innerHTML=(ms&&ms.s==='regular'?'오늘':'지난 거래일 대비')+' <b class="'+(m.day>=0?'tu':'td')+'">'+ar(m.day)+' <span class="amt">$'+f(Math.abs(m.day))+'</span> ('+pc(m.dayP)+')</b>'+(sl?'<span class="ses'+(ms.s==='regular'?' on':'')+'">'+sl+'</span>':'');
   heat();accounts(m);
   spark(m);
   var x=m.idx;function ix(id,o,dg){$(id).textContent=o&&o.p?f(o.p,dg):'-';var e=$(id+'c');if(o&&o.cp!=null){e.className=c(o.cp);e.textContent=ar(o.cp)+' '+Math.abs(o.cp*100).toFixed(1)+'%'}}
@@ -626,6 +641,8 @@ function pPick(code){PI=code;var cash=code==='현금',x=PA.items.filter(function
   $('pQ').value=cash?Math.round(PA.cash):(x?x.q:'');$('pA').value=x?Math.round(x.avg):''}
 $('pSel').onclick=function(e){var b=e.target.closest('button');if(!b)return;[].forEach.call(this.children,function(x){x.classList.toggle('on',x===b)});pPick(b.dataset.v)};
 function penGo(){var b=$('pGo');b.disabled=true;post({a:'penset',acc:PA.n,code:PI,q:$('pQ').value,avg:$('pA').value}).then(function(j){b.disabled=false;if(j.ok){$('md4').classList.remove('on');toast(j.msg);reloadAll(true)}else toast(j.err||'저장 실패')}).catch(function(e){b.disabled=false;if(e.message!=='auth')toast('저장하지 못했어요')})}
+var PRIV=sget('lime_priv')==='1';function applyPriv(){$('ph').classList.toggle('priv',PRIV);var e=$('eye');if(e)e.innerHTML=PRIV?'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 3l18 18M10.6 10.6a2 2 0 0 0 2.8 2.8M9.9 5.1A10 10 0 0 1 12 5c5 0 9 4.5 10 7a12 12 0 0 1-2.5 3.6M6.6 6.6A12 12 0 0 0 2 12c1 2.5 5 7 10 7 1.6 0 3.1-.4 4.4-1.1"/></svg>':'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12c1-2.5 5-7 10-7s9 4.5 10 7c-1 2.5-5 7-10 7S3 14.5 2 12z"/><circle cx="12" cy="12" r="3"/></svg>'}
+function togPriv(e){if(e)e.stopPropagation();PRIV=!PRIV;sset('lime_priv',PRIV?'1':'0');applyPriv();toast(PRIV?'금액을 가렸어요 · 수익률은 그대로 보여요':'금액을 다시 보여줘요')}
 function heat(){var a=(LV&&LV.sec)||[],w=$('heat');if(!a.length){w.parentNode.style.display='none';return}w.parentNode.style.display='';
   a=a.slice().sort(function(x,y){return y[2]-x[2]});
   w.innerHTML=a.map(function(x){var d=x[2],k=Math.min(Math.abs(d)/3,1),al=(0.12+k*0.78).toFixed(2),bg=d>=0?'rgba(240,68,82,'+al+')':'rgba(49,130,246,'+al+')';
@@ -712,7 +729,7 @@ function lgo(h){var t=esc(h.t),sm=h.t.length>3?' style="font-size:10.5px"':'';re
 function renderStocks(){var H=M.H.slice(),top=H.slice(0,3),etc=H.slice(3),d=top.map(function(h){return [h.t,h.w*100]});if(etc.length)d.push(['기타 '+etc.length+'종목',etc.reduce(function(a,h){return a+h.w},0)*100]);
   $('wq').innerHTML='<div class="wbar">'+d.map(function(g,i){return '<span style="flex:'+g[1]+';background:'+COLS[i]+'"></span>'}).join('')+'</div><ul>'+d.map(function(g,i){return '<li><i style="background:'+COLS[i]+'"></i>'+g[0]+' <b>'+g[1].toFixed(1)+'%</b></li>'}).join('')+'</ul>';
   H.sort(function(a,b){return b[SK]-a[SK]});
-  $('allList').innerHTML=H.map(function(h){return '<div class="row" onclick="tg(\''+h.t+'\')">'+lgo(h)+'<div class="nm"><b>'+h.t+'</b><span>'+f(h.q,h.q%1?2:0)+'주 · <em class="'+c(h.dc)+'" style="font-style:normal;font-weight:600">오늘 '+pc(h.dc)+'</em></span></div><div class="rt"><b>$'+f(h.val)+'</b><span class="'+c(h.pl)+'">'+sg(h.pl)+'$'+f(Math.abs(h.pl))+' ('+pc(h.ret*100)+')</span></div></div>'+det(h)}).join('')}
+  $('allList').innerHTML=H.map(function(h){return '<div class="row" onclick="tg(\''+h.t+'\')">'+lgo(h)+'<div class="nm"><b>'+h.t+'</b><span>'+f(h.q,h.q%1?2:0)+'주 · <em class="'+c(h.dc)+'" style="font-style:normal;font-weight:600">오늘 '+pc(h.dc)+'</em></span></div><div class="rt"><b class="amt">$'+f(h.val)+'</b><span class="'+c(h.pl)+'"><i class="amt">'+sg(h.pl)+'$'+f(Math.abs(h.pl))+'</i> ('+pc(h.ret*100)+')</span></div></div>'+det(h)}).join('')}
 function tg(t){OPEN[t]=!OPEN[t];var e=$('d_'+t);if(e)e.classList.toggle('on',OPEN[t])}
 function det(h){var z=h.z,body='<div class="kv"><div><small>현재가</small><b>$'+f(h.p)+'</b></div><div><small>평단</small><b>$'+f(h.avg)+'</b></div><div><small>비중</small><b>'+(h.w*100).toFixed(1)+'%</b></div></div>'+mini(h);
   if(z&&z.s1&&z.r1&&z.s1[0]&&z.r1[1]){var lo=z.s1[0],hi=z.r1[1],pos=Math.max(0,Math.min(1,(h.p-lo)/(hi-lo)))*100;
@@ -953,7 +970,7 @@ function hideSplash(){var s=$('spl');if(!s.classList.contains('on'))return;s.cla
   if(!TOK){showOb();return}$('ob').classList.add('off');
   var c=sget('lime_d');if(c){try{D=JSON.parse(c);DONE=(D.plan&&D.plan.done)||DONE;render();setStt((D.asOf||'')+' 기준',true)}catch(e){}}
   if(!splash())showQuote(pickQuote());
-  reloadAll(false);startLive();rptCard();if(Q.r){history.replaceState(null,'',location.pathname);openRpt(Q.r)}})();
+  applyPriv();reloadAll(false);startLive();rptCard();if(Q.r){history.replaceState(null,'',location.pathname);openRpt(Q.r)}})();
 </script>
 </body>
 </html>
